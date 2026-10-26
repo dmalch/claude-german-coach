@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Named `test` because the branch ruleset requires that exact check name.
+  # Renaming this job silently stops blocking merges.
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.11 is the floor: profiles are TOML and tomllib arrived in 3.11.
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # check_public.py --history reads every committed blob.
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      # Everything below is stdlib Python and dependency-free Node. The packs and
+      # answers in the tests are the public example or synthetic.
+      - run: python -m unittest discover -p 'test_*.py' -v
+      - run: python -m unittest discover -s bewertung -p 'test_*.py' -v
+      - run: node --test 'placement-test/test/*.test.js'
+      # Built-in patterns only: the secret packs and deny-lists are private and
+      # never reach CI. The full gate runs as a local pre-push hook.
+      - run: python check_public.py --history
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: ruff --version && pyright --version
+      - run: ruff check --output-format=github .
+      - run: ruff format --check .
+      - run: pyright

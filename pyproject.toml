@@ -1,0 +1,42 @@
+# Packaging is deliberately absent: these are scripts you run out of a clone,
+# not a library you install. This file exists for the linters.
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+# Markdown holds partial snippets on purpose; formatting them would rewrite docs.
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle
+    "W",
+    "F",    # pyflakes
+    "I",    # import order
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "A",    # shadowing builtins and stdlib module names
+    "C4",   # comprehensions
+    "SIM",  # simplifications
+    "RUF",
+]
+ignore = [
+    "E501",    # line length is checked by the formatter, not the linter
+    "SIM108",  # ternaries are not always clearer than an if/else
+    # German and Russian text in messages and docstrings: en dashes, umlauts and
+    # Cyrillic are deliberate, not mistyped ASCII.
+    "RUF001",
+    "RUF002",
+    "RUF003",
+]
+
+[tool.pyright]
+include = ["."]
+exclude = ["**/__pycache__", ".venv", "build", "profiles", "node_modules"]
+pythonVersion = "3.11"
+venvPath = "."
+venv = ".venv"
+typeCheckingMode = "basic"
+reportMissingImports = "error"
+# bewertung/ is run from its own folder (its tests import their neighbours).
+extraPaths = ["bewertung"]

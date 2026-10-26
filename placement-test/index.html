@@ -1,0 +1,2086 @@
+<title>Einstufungstest Deutsch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
+<style>
+  /* Prüfungsbogen: ink on a cool paper sheet; the learner's own answers are
+     written in Königsblau, the fountain-pen ink of German schools. */
+  :root {
+    --paper: #F6F7F9;
+    --sheet: #FFFFFF;
+    --ink: #1C2230;
+    --graphite: #5B6474;
+    --rule: #D9DEE7;
+    --accent: #2B4DB3;
+    --on-accent: #FFFFFF;
+    --ok: #1F7A4D;
+    --warn: #B45309;
+    --bad: #B42318;
+    --pen: #C8102E;
+    --shadow: 0 1px 2px rgb(28 34 48 / 0.05), 0 12px 32px -20px rgb(28 34 48 / 0.28);
+    --tint: color-mix(in srgb, var(--accent) 9%, var(--sheet));
+    --serif: "Literata", Georgia, "Times New Roman", serif;
+    --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #12151B;
+      --sheet: #1A1F27;
+      --ink: #E6E9EF;
+      --graphite: #9AA3B2;
+      --rule: #2B323D;
+      --accent: #8EA6F2;
+      --on-accent: #12151B;
+      --ok: #5CC08C;
+      --warn: #F0A44B;
+      --bad: #F07A6E;
+      --pen: #FF8A80;
+      --shadow: 0 1px 0 rgb(0 0 0 / 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #12151B;
+    --sheet: #1A1F27;
+    --ink: #E6E9EF;
+    --graphite: #9AA3B2;
+    --rule: #2B323D;
+    --accent: #8EA6F2;
+    --on-accent: #12151B;
+    --ok: #5CC08C;
+    --warn: #F0A44B;
+    --bad: #F07A6E;
+    --pen: #FF8A80;
+    --shadow: 0 1px 0 rgb(0 0 0 / 0.35);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 400 16px/1.55 var(--sans);
+    padding-inline: 16px;
+    padding-block: 0 72px;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button { font: inherit; }
+  p { margin: 0; text-wrap: pretty; }
+
+  /* ---- sticky bar: section, clock, save state ---- */
+  .bar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+    margin-inline: -16px;
+    padding: 10px 16px;
+    background: var(--paper);
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .bar-in {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 28px;
+  }
+  .bar.wide .bar-in { max-width: 1180px; }
+  .bar-title {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .clock {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font: 600 17px/1 var(--mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .clock small { font: 500 12px/1 var(--sans); color: var(--graphite); }
+  .clock.warn, .clock.warn small { color: var(--warn); }
+  .save {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--graphite);
+    white-space: nowrap;
+  }
+  .save .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--rule); }
+  .save[data-state="ok"] .dot { background: var(--ok); }
+  .save[data-state="busy"] .dot { background: var(--accent); }
+  .save[data-state="local"] .dot { background: var(--warn); }
+  .save[data-state="bad"] .dot { background: var(--bad); }
+  .save[data-state="bad"] { color: var(--bad); font-weight: 600; }
+
+  /* ---- the sheet ---- */
+  .sheet {
+    max-width: 720px;
+    margin: 28px auto 0;
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    padding: clamp(20px, 5vw, 48px);
+  }
+  .sheet.wide { max-width: 1180px; }
+  .eyebrow {
+    font: 600 11.5px/1.3 var(--sans);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--graphite);
+    margin-bottom: 10px;
+  }
+  .title {
+    font: 600 clamp(26px, 5.2vw, 34px)/1.15 var(--serif);
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+  .lead { font-size: 17px; color: var(--graphite); margin-bottom: 24px; max-width: 62ch; }
+  .sheet h2 {
+    font: 600 19px/1.3 var(--serif);
+    margin: 36px 0 12px;
+    text-wrap: balance;
+  }
+  .sheet h2.group {
+    font: 600 12px/1.3 var(--sans);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--graphite);
+    margin: 30px 0 4px;
+  }
+  .de { font-family: var(--serif); font-size: 17px; line-height: 1.6; }
+  .ru { color: var(--graphite); font-size: 14.5px; line-height: 1.5; }
+  .hint { color: var(--graphite); font-size: 14.5px; margin: 4px 0 18px; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .back {
+    background: none;
+    border: 0;
+    padding: 4px 0;
+    margin-bottom: 18px;
+    color: var(--graphite);
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .back:hover { color: var(--accent); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 11px 18px;
+    border-radius: 5px;
+    border: 1px solid var(--rule);
+    background: var(--sheet);
+    color: var(--ink);
+    font: 600 15px/1.2 var(--sans);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--graphite); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .btn.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
+  .btn:disabled { opacity: 0.55; cursor: default; }
+
+  .banner, .notice {
+    padding: 11px 14px;
+    border-radius: 5px;
+    font-size: 14.5px;
+    margin-bottom: 20px;
+    border: 1px solid;
+  }
+  .banner, .notice.warn {
+    border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+    background: color-mix(in srgb, var(--warn) 9%, var(--sheet));
+  }
+  .notice.ok {
+    border-color: color-mix(in srgb, var(--ok) 40%, transparent);
+    background: color-mix(in srgb, var(--ok) 8%, var(--sheet));
+  }
+
+  /* ---- start screen ---- */
+  .rules { list-style: none; padding: 0; margin: 0 0 30px; display: grid; gap: 12px; max-width: 64ch; }
+  .rules li { position: relative; padding-left: 20px; }
+  .rules li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.78em;
+    width: 9px;
+    height: 1.5px;
+    background: var(--accent);
+  }
+  .table-wrap { overflow-x: auto; margin-bottom: 26px; }
+  table { width: 100%; border-collapse: collapse; }
+  .plan th, .plan td {
+    text-align: left;
+    padding: 11px 8px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: middle;
+  }
+  .plan th:first-child, .plan td:first-child { padding-left: 0; }
+  .plan th:last-child, .plan td:last-child { padding-right: 0; }
+  .plan thead th, .scores thead th {
+    font: 600 11.5px/1.3 var(--sans);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--graphite);
+    padding-top: 0;
+  }
+  .plan tr.sitting th {
+    font: 600 13px/1.3 var(--sans);
+    color: var(--ink);
+    padding-top: 22px;
+    border-bottom-color: var(--ink);
+  }
+  .plan td.time { font: 400 14px var(--mono); color: var(--graphite); white-space: nowrap; }
+  .teil {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--ink);
+    font: 600 15.5px/1.35 var(--sans);
+    text-align: left;
+    cursor: pointer;
+  }
+  .teil:hover:not(:disabled) { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .teil:disabled { cursor: default; }
+  .pill {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+    color: var(--graphite);
+    font: 600 12px/1.2 var(--sans);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .pill.run { color: var(--accent); border-color: var(--accent); }
+  .pill.done {
+    color: var(--ok);
+    border-color: color-mix(in srgb, var(--ok) 45%, transparent);
+    background: color-mix(in srgb, var(--ok) 8%, transparent);
+  }
+  .pill-sub { display: block; margin-top: 4px; font: 400 12px var(--mono); color: var(--graphite); }
+  .cta { display: grid; gap: 12px; justify-items: start; margin-bottom: 8px; }
+  .between { color: var(--graphite); max-width: 60ch; }
+
+  /* ---- unit screens ---- */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 12px; }
+  .chip {
+    font: 600 13px/1 var(--mono);
+    padding: 7px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--graphite);
+    cursor: pointer;
+  }
+  .chip.done { color: var(--ok); }
+  .chip.cur { color: var(--accent); border-color: var(--accent); }
+  .chip[aria-current] { background: var(--tint); border-color: var(--accent); }
+  .chip:disabled { opacity: 0.45; cursor: default; }
+  .unit-label { font: 600 16px/1.4 var(--sans); margin-bottom: 18px; }
+  .intro { display: grid; gap: 14px; max-width: 64ch; }
+  .budget { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; color: var(--graphite); }
+  .budget b { font: 600 18px var(--mono); color: var(--ink); }
+  .intro .btn { justify-self: start; margin-top: 6px; }
+  .example {
+    padding: 12px 16px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    line-height: 2;
+  }
+  .example small { display: block; font: 500 12px/1.4 var(--sans); color: var(--graphite); }
+
+  /* printed blanks */
+  .gap { white-space: nowrap; }
+  .gap-in, .blank {
+    -webkit-appearance: none;
+    appearance: none;
+    font: inherit;
+    line-height: 1.2;
+    color: var(--accent);
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--graphite);
+    border-radius: 0;
+    padding: 0 1px 1px;
+    margin: 0;
+  }
+  .gap-in { width: calc(var(--n, 4) * 1ch + 4px); }
+  .blank { width: 9.5ch; margin-inline: 2px; }
+  .blank.suffix { width: 3.6ch; margin-left: 0; }
+  .gap-in:focus, .blank:focus { outline: none; border-bottom-color: var(--accent); background: var(--tint); }
+  .gap-in[readonly], .blank[readonly] { border-bottom-style: dotted; }
+  .ctest {
+    font-family: var(--serif);
+    font-size: 18.5px;
+    line-height: 2.2;
+    margin: 0 0 8px;
+    max-width: 66ch;
+  }
+
+  /* items */
+  .items { display: grid; }
+  .item { padding: 16px 0; border-bottom: 1px solid var(--rule); }
+  .item:last-child { border-bottom: 0; }
+  .fill { font-size: 17.5px; line-height: 1.95; }
+  .q { margin-bottom: 10px; }
+  .opts { display: grid; gap: 6px; }
+  .opts.row { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .opt { position: relative; }
+  .opt input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+  .opt label {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    height: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    font: 400 16px/1.45 var(--serif);
+    cursor: pointer;
+    transition: border-color 0.15s, background-color 0.15s;
+  }
+  .opt label::before {
+    content: "";
+    flex: none;
+    width: 15px;
+    height: 15px;
+    margin-top: 0.22em;
+    border-radius: 50%;
+    border: 1.5px solid var(--graphite);
+  }
+  .opt label:hover { border-color: var(--graphite); }
+  .opt input:checked + label { border-color: var(--accent); background: var(--tint); color: var(--ink); }
+  .opt input:checked + label::before { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 2.5px var(--tint); }
+  .opt input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .opt input:disabled + label { cursor: default; }
+  .opt input:disabled:not(:checked) + label { color: var(--graphite); }
+  .opt input:disabled + label:hover { border-color: var(--rule); }
+  .opt input:disabled:checked + label:hover { border-color: var(--accent); }
+
+  .stmt { padding: 14px 0 16px; border-bottom: 1px solid var(--rule); }
+  .stmt .ru { margin: 2px 0 10px; }
+  .scale { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .scale .opt label { justify-content: center; text-align: center; font: 500 14px/1.3 var(--sans); padding: 9px 6px; }
+  .scale .opt label::before { display: none; }
+
+  /* reading */
+  .reading { display: grid; gap: 20px; margin-bottom: 36px; }
+  .passage { white-space: pre-line; }
+  .passage.letter {
+    padding: 20px 22px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    font-size: 16px;
+  }
+  .questions .item:first-child { padding-top: 4px; }
+  @media (min-width: 900px) {
+    .reading { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 44px; align-items: start; }
+    .reading .questions {
+      position: sticky;
+      top: calc(env(safe-area-inset-top, 0px) + 68px);
+      max-height: calc(100vh - 88px);
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .reading h2 { margin-top: 8px; }
+  }
+
+  /* listening, writing, speaking */
+  .rule-line { font-weight: 600; margin: 4px 0 8px; }
+  .task, .episode {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin: 14px 0 18px;
+    display: grid;
+    gap: 10px;
+  }
+  .task h2, .episode h2 { margin: 0; }
+  .task .eyebrow, .episode .eyebrow { margin: 0; }
+  .episode .btn { justify-self: start; }
+  .points { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+  .target { font: 400 14px var(--mono); color: var(--graphite); }
+  .field { display: grid; gap: 6px; }
+  .field-label { font: 600 12px/1.3 var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--graphite); }
+  textarea.write {
+    width: 100%;
+    resize: vertical;
+    min-height: 8em;
+    padding: 6px 12px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    color: var(--accent);
+    font: 400 17px/1.75em var(--serif);
+    background-color: var(--sheet);
+    background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.75em - 1px), var(--rule) calc(1.75em - 1px), var(--rule) 1.75em);
+    background-origin: content-box;
+    background-attachment: local;
+  }
+  textarea.write:focus { outline: none; border-color: var(--accent); }
+  .count { font: 400 13px var(--mono); color: var(--graphite); text-align: right; margin-top: 6px; }
+  .count.ok { color: var(--ok); }
+  .chat { display: grid; gap: 22px; margin-top: 8px; }
+  .turn { display: grid; gap: 10px; }
+  .praxis {
+    justify-self: start;
+    max-width: 88%;
+    padding: 10px 14px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 12px 12px 12px 3px;
+  }
+  .praxis small { display: block; font: 600 11px/1.3 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite); margin-bottom: 3px; }
+  .reply { justify-self: end; width: 88%; display: grid; gap: 6px; }
+  .reply textarea.write { min-height: 3.9em; }
+  .tip summary { cursor: pointer; color: var(--graphite); font-size: 13.5px; width: max-content; }
+  .tip summary:hover { color: var(--accent); }
+  .tip p { margin-top: 6px; }
+
+  /* submit */
+  .submit {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+  }
+  .progress { color: var(--graphite); font-size: 14px; }
+  .confirm-text { flex-basis: 100%; font-weight: 500; }
+
+  /* results */
+  .level { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin: 4px 0 16px; }
+  .level b { font: 600 44px/1 var(--mono); color: var(--accent); }
+  .level span { color: var(--graphite); }
+  .scores { font-size: 15px; }
+  .scores th, .scores td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--rule); }
+  .scores .num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; padding-right: 0; padding-left: 10px; white-space: nowrap; }
+  .scores tfoot td { font-weight: 600; border-bottom: 0; }
+  .zones { display: grid; gap: 9px; margin-top: 6px; }
+  .zone { display: grid; grid-template-columns: minmax(0, 1fr) auto 3.2em; align-items: center; gap: 12px; }
+  .cells { display: grid; grid-template-columns: repeat(4, 20px); gap: 3px; }
+  .cells i { height: 10px; border-radius: 2px; background: var(--rule); }
+  .cells i.on { background: var(--accent); }
+  .zone.weak .cells i.on { background: var(--warn); }
+  .zone .n { font: 400 13px var(--mono); text-align: right; color: var(--graphite); }
+  .stats { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .stat { border-top: 1px solid var(--ink); padding-top: 10px; display: grid; gap: 2px; }
+  .stat b { font: 600 28px/1.1 var(--mono); }
+  .stat span { color: var(--graphite); font-size: 14px; }
+  textarea.dump { width: 100%; height: 12em; margin-top: 10px; font: 12px/1.5 var(--mono); color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 5px; padding: 8px; }
+  .copy { display: grid; gap: 8px; justify-items: start; margin-top: 14px; }
+
+
+  /* ---- graded result: the learner's ink is blue, the corrections are red pen ---- */
+  .sheet h3 { font: 600 16px/1.35 var(--sans); margin: 24px 0 8px; text-wrap: balance; }
+  .sheet del { color: inherit; text-decoration: line-through; text-decoration-color: var(--pen); text-decoration-thickness: 1.5px; }
+  .sheet ins { text-decoration: none; color: var(--pen); font-weight: 600; }
+  .thesis { font: 400 17.5px/1.6 var(--serif); max-width: 62ch; margin: 14px 0 0; }
+  .ladder { display: grid; margin: 6px 0 0; }
+  .ladder-head, .rung { display: grid; grid-template-columns: minmax(6.5em, 10em) minmax(0, 1fr); gap: 14px; align-items: center; }
+  .ticks, .track { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .ticks span { font: 600 12px/1 var(--mono); color: var(--graphite); text-align: center; padding-bottom: 6px; }
+  .ladder .grp { font: 600 11.5px/1.3 var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--graphite); padding: 14px 0 4px; }
+  .rung { padding: 8px 0; border-bottom: 1px solid var(--rule); }
+  .rung-name { display: grid; gap: 1px; min-width: 0; }
+  .rung-name b { font: 600 15px/1.25 var(--sans); }
+  .rung-name small { font-size: 12.5px; line-height: 1.3; color: var(--graphite); }
+  .track {
+    height: 24px;
+    align-items: center;
+    background-image: linear-gradient(to right, var(--rule) 1px, transparent 1px);
+    background-size: 20% 100%;
+  }
+  .range { grid-row: 1; height: 10px; margin-inline: 5px; border-radius: 5px; background: color-mix(in srgb, var(--accent) 24%, var(--sheet)); }
+  .marker { grid-row: 1; justify-self: center; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--sheet); }
+  .marker.prov { background: var(--sheet); box-shadow: inset 0 0 0 2px var(--accent); }
+  .goals { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 22px; counter-reset: goal; }
+  .goal { display: grid; grid-template-columns: 2em minmax(0, 1fr); gap: 0 14px; counter-increment: goal; }
+  .goal::before { content: counter(goal); grid-row: 1 / span 4; font: 600 26px/1.1 var(--mono); color: var(--accent); }
+  .goal-body { display: grid; gap: 6px; min-width: 0; }
+  .goal h3 { margin: 0; font: 600 18px/1.3 var(--serif); }
+  .ex { font: 400 16.5px/1.55 var(--serif); }
+  .aside { color: var(--graphite); font-size: 14.5px; max-width: 64ch; margin-top: 14px; }
+  .vs { display: grid; }
+  .vs-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 18px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+  .vs-row h3 { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0; font-size: 15px; }
+  .vs-row p { font-size: 14.5px; min-width: 0; }
+  .vs-row small { display: block; font: 600 11px/1.3 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite); }
+  .pill.low { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .pill.high { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); background: color-mix(in srgb, var(--warn) 8%, transparent); }
+  .fixes { list-style: none; padding: 0; margin: 0; display: grid; }
+  .fixes li { display: grid; gap: 2px; padding: 9px 0; border-bottom: 1px solid var(--rule); }
+  .fixes li:last-child { border-bottom: 0; }
+  .fixes .why { font-size: 14px; color: var(--graphite); }
+  .fixes .why a, .edit .why a { color: inherit; text-underline-offset: 2px; }
+  .crit { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 6px 0 14px; }
+  .crit div { border-top: 1px solid var(--ink); padding-top: 6px; display: grid; gap: 2px; }
+  .crit span { font-size: 12.5px; color: var(--graphite); }
+  .crit b { font: 600 18px/1.2 var(--mono); }
+  .meta { font: 400 13.5px var(--mono); color: var(--graphite); margin-bottom: 8px; }
+  .korrektur {
+    font: 400 17px/1.8em var(--serif);
+    color: var(--accent);
+    padding: 6px 14px 10px;
+    margin: 12px 0 6px;
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.8em - 1px), var(--rule) calc(1.8em - 1px), var(--rule) 1.8em);
+    background-origin: content-box;
+    overflow-wrap: anywhere;
+  }
+  .korrektur del { color: var(--accent); }
+  details.all { margin-top: 10px; }
+  details.all summary { cursor: pointer; color: var(--graphite); font-size: 14px; width: max-content; max-width: 100%; }
+  details.all summary:hover { color: var(--accent); }
+  .edit { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 9px 0; border-bottom: 1px solid var(--rule); }
+  .edit .pair { font: 400 16px/1.5 var(--serif); overflow-wrap: anywhere; }
+  .edit .code { font: 600 11.5px/1.5 var(--mono); color: var(--graphite); text-align: right; }
+  .edit .why { grid-column: 1 / -1; font-size: 14px; color: var(--graphite); }
+  .edit.style .pair ins { color: var(--graphite); font-weight: 400; }
+
+  @media (max-width: 520px) {
+    .scale { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .clock { font-size: 15px; }
+    .bar-title { font-size: 13px; }
+    .reply, .praxis { width: 100%; max-width: 100%; }
+    .ctest { font-size: 17.5px; }
+    .vs-row { grid-template-columns: minmax(0, 1fr); }
+    .crit { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<header class="bar" id="bar" lang="ru">
+  <div class="bar-in">
+    <span class="bar-title" id="bar-title">Einstufungstest Deutsch</span>
+    <span class="clock" id="clock" role="timer" hidden></span>
+    <span class="save" id="save" data-state="idle"><span class="dot"></span><span id="save-text">подключаю…</span></span>
+  </div>
+</header>
+<main id="app" lang="ru"></main>
+
+<script src="ctest.js" charset="utf-8"></script>
+<script src="scoring.js" charset="utf-8"></script>
+<script src="autoscore.js" charset="utf-8"></script>
+<script src="content.js" charset="utf-8"></script>
+<script src="ergebnis.js" charset="utf-8"></script>
+<script>
+(function () {
+  "use strict";
+
+  const K = window.EinstufungContent;
+  const CT = window.CTest;
+  const SC = window.Scoring;
+  const AS = window.AutoScore;
+  const E = window.EinstufungErgebnis || null;   // the graded result, once Claude has checked the test
+  const app = document.getElementById("app");
+  const $ = (id) => document.getElementById(id);
+
+  function h(tag, props, ...kids) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(props || {})) {
+      if (v == null || v === false) continue;
+      if (k === "class") el.className = v;
+      else if (k === "style") el.style.cssText = v;
+      else if (k === "value") el.value = v;
+      else if (k === "checked") el.checked = true;
+      else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? "" : String(v));
+    }
+    for (const kid of kids.flat(Infinity)) {
+      if (kid != null && kid !== false && kid !== "") el.append(kid instanceof Node ? kid : String(kid));
+    }
+    return el;
+  }
+  const button = (text, onclick, cls = "btn primary", disabled = false) =>
+    h("button", { type: "button", class: cls, onclick, disabled }, text);
+
+  // Refuse to run on a wrong decoding. Escapes keep these checks true under any
+  // decoding of this script: the host document must be UTF-8, and so must the three
+  // siblings (umlauts in content titles, ctest fold, scoring norm).
+  const pageOk = "ä" === "\u00e4";
+  const filesOk = !!(K && CT && SC && AS);
+  const utf8Ok = filesOk && K.encodingProbe === "\u00e4\u00f6\u00fc\u00df" &&
+    CT.build("Wir sind hier. Die \u00dcbung l\u00e4uft gut heute. Das ist das Ende.", 1).gaps[0].word === "\u00dcbung" &&
+    SC.scoreItem({ type: "fill", accept: ["\u00e4"] }, "ae");
+  if (!pageOk || !utf8Ok) {
+    $("save").hidden = true;
+    app.append(h("article", { class: "sheet" },
+      h("h1", { class: "title" }, "Einstufungstest Deutsch"),
+      h("p", { class: "notice warn" }, !pageOk
+        ? "\u0421\u0442\u0440\u0430\u043d\u0438\u0446\u0430 \u043f\u0440\u043e\u0447\u0438\u0442\u0430\u043b\u0430\u0441\u044c \u0432 \u043d\u0435\u0432\u0435\u0440\u043d\u043e\u0439 \u043a\u043e\u0434\u0438\u0440\u043e\u0432\u043a\u0435. \u041e\u0431\u043d\u043e\u0432\u0438 \u0435\u0451; \u0435\u0441\u043b\u0438 \u043d\u0435 \u043f\u043e\u043c\u043e\u0436\u0435\u0442 \u2014 \u043d\u0430\u043f\u0438\u0448\u0438 Claude \u0432 \u0447\u0430\u0442."
+        : !filesOk
+          ? "Не загрузились файлы теста (ctest.js, scoring.js, autoscore.js, content.js). Обнови страницу; если не поможет — напиши Claude в чат."
+          : "Файлы теста прочитались в неверной кодировке, пропуски C-теста были бы не на своих местах. Обнови страницу; если не поможет — напиши Claude в чат.")));
+    return;
+  }
+
+  // ---------- Units: one db document each ----------
+  const SECTION = Object.fromEntries(K.sections.map((s) => [s.id, s]));
+  const CTEXT = Object.fromEntries(K.ctest.map((t) => [t.id, t]));
+  const MONOLOG = K.sprechen.find((f) => f.kind === "monolog");
+  const DIALOG = K.sprechen.find((f) => f.kind === "dialog");
+  // Teil F has one 15-minute budget; content gives only the monologue's speaking
+  // time (3 min), so F1 gets that plus 3 min to read the card and start dictation,
+  // and F2 the rest.
+  const F1_MIN = MONOLOG.minutes + 3;
+
+  const UNITS = [];
+  function addUnit(id, section, kind, minutes, label) {
+    UNITS.push({ id, section, kind, label, limitSec: Math.round(minutes * 60), hard: SECTION[section].timer === "hard" });
+  }
+  addUnit("self", "self", "self", SECTION.self.minutes, "Selbsteinschätzung");
+  K.ctest.forEach((t, i) => addUnit(t.id, "A", "ctest", SECTION.A.minutes / K.ctest.length,
+    "Text " + (i + 1) + " von " + K.ctest.length + " · " + t.topic));
+  addUnit("B", "B", "grammar", SECTION.B.minutes, "Grammatik");
+  addUnit("C", "C", "lesen", SECTION.C.minutes, "Lesen");
+  addUnit("D", "D", "hoeren", SECTION.D.minutes, "Hören");
+  K.schreiben.forEach((e) => addUnit(e.id, "E", "schreiben", e.minutes, e.title));
+  addUnit(MONOLOG.id, "F", "monolog", F1_MIN, "Monolog");
+  addUnit(DIALOG.id, "F", "dialog", SECTION.F.minutes - F1_MIN, "Telefonat mit der Praxis");
+  const UNIT = Object.fromEntries(UNITS.map((u) => [u.id, u]));
+  const SECTION_UNITS = Object.fromEntries(K.sections.map((s) => [s.id, UNITS.filter((u) => u.section === s.id)]));
+
+  // Scoring lives in autoscore.js, shared with rescore.js, so a rescore can never
+  // disagree with what the learner was shown.
+  const AUTO = AS.create(K, CT, SC);
+  const BUILT = AUTO.built;
+  const BUILD_ERROR = AUTO.buildError;
+
+  // Grammar items round-robin across zones, so four items of one zone never
+  // stand in a row and cue each other.
+  const ZONES = [...new Set(K.grammar.map((i) => i.zone))];
+  const GRAMMAR_ORDER = [];
+  {
+    const byZone = ZONES.map((z) => K.grammar.filter((i) => i.zone === z));
+    const rounds = Math.max(...byZone.map((a) => a.length));
+    for (let k = 0; k < rounds; k++) for (const a of byZone) if (a[k]) GRAMMAR_ORDER.push(a[k]);
+  }
+  const ZONE_NAME = {
+    ART: "Артикль и род", PRAEP: "Предлоги и управление", ADJ: "Окончания прилагательных",
+    WO: "Порядок слов и рамка", AUX: "haben / sein в Perfekt", PASS: "Passiv", KONJ2: "Konjunktiv II",
+    KONN: "Союзы и связки", REL: "Относительные придаточные", NDEKL: "n-склонение и Genitiv",
+  };
+
+  // ---------- State ----------
+  const S = {
+    docs: {},              // unit id -> answers document (see Store)
+    ready: false,          // store connected and documents loaded
+    loadError: null,
+    view: { name: "overview" },
+    notice: null,          // {tone, text}, shown once on the next screen
+    confirm: null,         // unit id whose "submit?" question is open
+    locked: new Set(),     // units another window changed: read-only here until reload
+    starting: null,        // unit id whose start is being checked against the store
+    startAttempt: null,    // token of that check; a check that timed out is ignored
+    ownHere: new Set(),    // units started or answered in this view in this page load
+    pastDeadline: new Set(),   // adopted C-test texts past their deadline, waiting out the grace
+    expiring: new Set(),   // adopted texts whose db copy is being read to submit it
+    expireRetryAt: {},     // unit id -> earliest retry after a failed read
+    loadedAt: Date.now(),
+    inherited: {},         // unit id -> {writerId, writerSeq} of the own copy taken at load
+  };
+  // Every body this view writes carries its writerId (one per page load) and a
+  // writerSeq that grows with each change. Snapshots and storage events carrying our
+  // own writerId are our echoes and are ignored; two copies from the same other view
+  // are ordered by writerSeq. No wall clock is involved in either decision.
+  const WRITER = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+    : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+  let writerSeq = 0;
+  const stampWriter = (doc) => { doc.writerId = WRITER; doc.writerSeq = ++writerSeq; };
+  // An adopted C-test text is submitted by this view only after this grace past its
+  // deadline, from the db copy, so the view that was writing it submits it first.
+  const GRACE_SEC = 60;
+
+  // ---------- Persistence ----------
+  // Collection "answers", one document per unit id — self, A1…A6, B, C, D, E1, E2,
+  // F1, F2:
+  //   { unit, startedAt, finishedAt: null | ISO, overtimeSec, limitSec, responses,
+  //     auto: null | {…}, contentVersion, updatedAt, writerId, writerSeq }
+  // limitSec is the unit's time budget on this page (F1/F2 split F's 15 min 6 + 9);
+  // updatedAt is the time of the last change made in some view (start, answer, submit);
+  // writerId/writerSeq name the view (page load) that made it and its change count.
+  // responses by unit:
+  //   self        { [statementId]: 0..3 }        integer index into content.self.scale
+  //   A1…A6       ["", "he", …]                  ARRAY indexed by gap index
+  //               (CTest.build(text).gaps[i].index); what was typed after the printed
+  //               letters, "" = untouched. Feed it to CTest.scoreText as is.
+  //   B           { [itemId]: "text" | n }       fill = typed string, choice = integer
+  //   C, D        { [itemId]: n }                integer option index
+  //   E1, E2, F1  { text: "…" }
+  //   F2          { "F2-1": "…", …, "F2-5": "…" } reply to receptionist turn n (1-based)
+  // auto (computed at submit): self → Scoring.selfAssessment; A → {band, strict,
+  //   tolerant, max}; B → Scoring.scoreGrammar; C, D → {correct, max, byText:{L1|H1:
+  //   {correct, max}, …}}; E1, E2, F1, F2 → {words}.
+  //
+  // Several views (tabs, devices) may hold the same unit. At load and at a start, of
+  // two copies the fresher wins: a submitted copy beats an unsubmitted one, otherwise
+  // the later updatedAt.
+  // - Every write is mirrored to localStorage as {synced, body}. At load an unsynced
+  //   local copy is pushed only if it is fresher than the db copy and differs from it;
+  //   a synced local copy the db no longer has was deleted there and is dropped.
+  // - A start re-reads the db and the local copy first and adopts a unit another view
+  //   already started, so a second start can never reset answers or the hard clock.
+  // - Changes from elsewhere arrive through one onSnapshot subscription (db) and the
+  //   storage event (other tabs of this browser). A copy written by another view is
+  //   adopted (see adoptExternal); if its unit is open in this view, that unit turns
+  //   read-only here. Neither path writes to the db.
+  // - At a C-test deadline a view submits only texts it started or answered itself, or
+  //   whose newest copy at load was this browser's own. A text adopted from elsewhere
+  //   is submitted after GRACE_SEC, from the db copy.
+  const canon = (v) => JSON.stringify(v, (k, x) => (x && typeof x === "object" && !Array.isArray(x)
+    ? Object.fromEntries(Object.keys(x).sort().map((key) => [key, x[key]])) : x));
+  const unstamped = (d) => Object.assign({}, d, { writerId: null, writerSeq: null });
+  const sameContent = (a, b) => canon(unstamped(a)) === canon(unstamped(b));
+  function fresher(a, b) {
+    if (!b) return !!a;
+    if (!a) return false;
+    if (!!a.finishedAt !== !!b.finishedAt) return !!a.finishedAt;
+    return String(a.updatedAt || "") > String(b.updatedAt || "");
+  }
+
+  const Store = (() => {
+    let db = null;
+    let inflight = 0;
+    let unsubscribe = null;
+    let resubscribes = 0;
+    const chains = {};
+    const timers = {};
+    const firstDirtyAt = {};
+    const bodies = {};
+    const lastJson = {};
+    const dirty = new Set();
+    const MAX_WAIT = 5000;   // continuous typing still reaches the db every 5 s
+    const localKey = (id) => "einstufung:" + id;
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const jitter = () => 1000 + Math.random() * 2000;
+    const clone = (v) => JSON.parse(JSON.stringify(v));
+    // Unknown codes count as "unavailable" (db contract): retry those once.
+    const TERMINAL = ["invalid_argument", "quota_exceeded", "revoked", "not_granted",
+      "capability_disabled", "capability_removed", "transform_error"];
+    const retryable = (e) => !(e && TERMINAL.includes(e.code));
+    async function withRetry(fn) {
+      try { return await fn(); } catch (e) {
+        if (!retryable(e)) throw e;
+        await sleep(jitter());
+        return fn();
+      }
+    }
+
+    async function init() {
+      try {
+        db = window.claude && window.claude.use ? await window.claude.use("db") : null;
+      } catch (e) {
+        db = null;
+      }
+      return db !== null;
+    }
+
+    // Local envelope: {synced, mine, body}. mine = this browser wrote the body (an
+    // unsynced copy always is); false for a mirror of another view's copy.
+    function readLocal(id) {
+      try {
+        const v = JSON.parse(localStorage.getItem(localKey(id)) || "null");
+        if (!v || !v.body) return null;
+        if (typeof v.mine !== "boolean") v.mine = !v.synced;
+        return v;
+      } catch (e) { return null; }
+    }
+    function writeLocal(id, json, synced, mine = true) {
+      lastJson[id] = json;
+      try { localStorage.setItem(localKey(id), '{"synced":' + synced + ',"mine":' + mine + ',"body":' + json + "}"); } catch (e) { /* private window */ }
+    }
+    function dropLocal(id) {
+      try { localStorage.removeItem(localKey(id)); } catch (e) { /* private window */ }
+    }
+
+    // At load, the newest copy of each unit. A unit whose winning copy is this
+    // browser's own is OWN for this page load: an unsynced local copy at least as new
+    // as the db copy (pushed, and the push awaited, when the db lacks it), or a synced
+    // own copy the db still holds unchanged. Its stamp is kept as is (never re-stamped:
+    // the copy may belong to another tab of this browser that is still live, and
+    // re-stamping it would make that tab see its own current work echo back under a
+    // foreign writer and lock itself). The stamp found is also recorded as inherited,
+    // so a late echo carrying that same writer and an equal or older writerSeq is never
+    // foreign either — this is what protects a reload against its own dead page load's
+    // late writes. Every other db copy is adopted.
+    async function loadAll(ids) {
+      const docs = {};
+      const own = new Set();
+      const inherited = {};
+      const takeOwn = (id, body) => {
+        inherited[id] = { writerId: body.writerId, writerSeq: body.writerSeq || 0 };
+        docs[id] = body;
+        own.add(id);
+      };
+      if (!db) {
+        for (const id of ids) {
+          const l = readLocal(id);
+          if (l && l.mine) takeOwn(id, l.body);
+          else if (l) docs[id] = l.body;
+        }
+        return { docs, own, inherited };
+      }
+      const snap = await withRetry(() => db.collection("answers").get());
+      const remote = {};
+      for (const d of snap.docs) if (d.exists !== false) remote[d.id] = clone(d.data());
+      const pushes = [];
+      for (const id of ids) {
+        const l = readLocal(id);
+        const r = remote[id];
+        const same = !!(l && r && sameContent(l.body, r));
+        if (l && !l.synced && (same || fresher(l.body, r))) {
+          takeOwn(id, l.body);
+          if (same) writeLocal(id, JSON.stringify(l.body), true);
+          else pushes.push(write(id, l.body));      // the db lacks our newest copy: push it
+        } else if (l && l.synced && l.mine && same) {
+          takeOwn(id, l.body);
+          writeLocal(id, JSON.stringify(l.body), true);
+        } else if (r) {
+          docs[id] = r;
+          writeLocal(id, JSON.stringify(r), true, false);
+        } else if (l) {
+          dropLocal(id);                            // was synced, since deleted in the db
+        }
+      }
+      await Promise.all(pushes);
+      return { docs, own, inherited };
+    }
+
+    // Before a start: the fresher of the db document and the local copy (another tab
+    // of this browser writes the same key), or null. Throws if the db cannot be read.
+    async function fetchExisting(id) {
+      const l = readLocal(id);
+      let r = null;
+      if (db) {
+        const snap = await withRetry(() => db.doc("answers/" + id).get());
+        r = snap.exists ? clone(snap.data()) : null;
+      }
+      if (r && !(l && fresher(l.body, r))) {
+        writeLocal(id, JSON.stringify(r), true, false);
+        return r;
+      }
+      if (!r && l && l.synced && db) { dropLocal(id); return null; }   // deleted in the db
+      return l ? l.body : null;
+    }
+
+    // The copy to submit an adopted text from: the db document, or the local copy
+    // (shared by this browser's tabs) when there is no db. Throws if the read fails.
+    async function fetchCurrent(id) {
+      if (!db) return (readLocal(id) || {}).body || null;
+      const snap = await withRetry(() => db.doc("answers/" + id).get());
+      return snap.exists ? clone(snap.data()) : null;
+    }
+
+    // One subscription per page load; the callback only reads.
+    function subscribe(onBody) {
+      if (!db || unsubscribe) return;
+      unsubscribe = db.collection("answers").onSnapshot((snap) => {
+        for (const ch of snap.docChanges()) {
+          if (ch.type !== "removed" && ch.doc.exists !== false) onBody(ch.doc.id, clone(ch.doc.data()));
+        }
+      }, (e) => {
+        unsubscribe = null;
+        if (e && e.code === "unavailable" && resubscribes < 3) {
+          resubscribes += 1;
+          setTimeout(() => subscribe(onBody), 5000);
+        }
+      });
+    }
+
+    // One write at a time per document, coalesced per pause (db contract).
+    function write(id, body) {
+      const json = JSON.stringify(body);
+      writeLocal(id, json, false);
+      if (!db) { ui.update(); return Promise.resolve(); }
+      inflight += 1;
+      ui.saving();
+      const attempt = () => db.doc("answers/" + id).set(JSON.parse(json));
+      chains[id] = (chains[id] || Promise.resolve())
+        .then(attempt)
+        .catch((e) => (retryable(e) ? sleep(jitter()).then(attempt) : Promise.reject(e)))
+        .then(() => {
+          if (lastJson[id] === json) writeLocal(id, json, true);
+          ui.saved(id);
+        }, (e) => ui.saveFailed(id, e))
+        .finally(() => { inflight -= 1; ui.update(); });
+      return chains[id];
+    }
+    function save(id, body, delay = 1200) {
+      bodies[id] = body;
+      if (!dirty.has(id)) firstDirtyAt[id] = Date.now();
+      dirty.add(id);
+      writeLocal(id, JSON.stringify(body), false);
+      ui.saving();
+      clearTimeout(timers[id]);
+      const wait = Math.max(0, Math.min(delay, firstDirtyAt[id] + MAX_WAIT - Date.now()));
+      timers[id] = setTimeout(() => { dirty.delete(id); write(id, bodies[id]); }, wait);
+    }
+    function cancel(id) {
+      clearTimeout(timers[id]);
+      dirty.delete(id);
+      ui.update();
+    }
+    function flush(id, body) {
+      cancel(id);
+      return write(id, body);
+    }
+    function flushAll() {
+      for (const id of [...dirty]) flush(id, bodies[id]);
+    }
+    return {
+      init, loadAll, fetchExisting, fetchCurrent, subscribe, save, cancel, flush, flushAll, retryable,
+      mirror: (id, body) => writeLocal(id, JSON.stringify(body), true, false),
+      peek: (id) => (readLocal(id) || {}).body || null,
+      online: () => db !== null,
+      busy: () => dirty.size > 0 || inflight > 0,
+    };
+  })();
+
+  const ui = {
+    failed: new Map(),     // unit id -> code of its last failed write
+    saving() { this.update(); },
+    saved(id) { this.failed.delete(id); this.update(); },
+    saveFailed(id, e) { this.failed.set(id, (e && e.code) || "unavailable"); this.update(); },
+    update() {
+      let state = "ok";
+      let text = "сохранено";
+      if (!S.ready) { state = "idle"; text = "подключаю…"; }
+      else if (!Store.online()) { state = "local"; text = "только в браузере"; }
+      else if (this.failed.size) { state = "bad"; text = "не сохраняется"; }
+      else if (Store.busy()) { state = "busy"; text = "сохраняю…"; }
+      $("save").dataset.state = state;
+      $("save-text").textContent = text;
+    },
+  };
+
+  // Failed writes that may succeed later are retried every 30 s with the full body.
+  let lastRetry = 0;
+  function retryFailed(now) {
+    if (!ui.failed.size || now - lastRetry < 30000) return;
+    lastRetry = now;
+    for (const [id, code] of ui.failed) {
+      if (Store.retryable({ code }) && S.docs[id] && !S.locked.has(id)) Store.flush(id, S.docs[id]);
+    }
+  }
+
+  // A copy of a unit from another view (db snapshot or another tab's storage event).
+  // Our own echoes are skipped by writerId; an older copy from the same other view by
+  // writerSeq; a submitted unit never reopens. Otherwise the copy is adopted, our
+  // pending write for it is dropped and the unit stops being ours to expire. If the
+  // unit is open here, it turns read-only instead of being written over.
+  function adoptExternal(id, body, fromDb) {
+    if (!S.ready || !UNIT[id] || !body || typeof body !== "object") return;
+    if (body.writerId === WRITER) return;
+    const past = S.inherited[id];
+    if (past && body.writerId === past.writerId && (body.writerSeq || 0) <= past.writerSeq) return;
+    const mine = S.docs[id];
+    if (mine) {
+      if (sameContent(mine, body)) return;
+      if (mine.finishedAt && !body.finishedAt) return;
+      if (mine.writerId && mine.writerId === body.writerId && (body.writerSeq || 0) <= (mine.writerSeq || 0)) return;
+    }
+    Store.cancel(id);
+    S.docs[id] = body;
+    S.ownHere.delete(id);
+    if (fromDb) Store.mirror(id, body);
+    if (S.view.name === "unit" && S.view.id === id) {
+      S.locked.add(id);
+      S.confirm = null;
+      render();
+    } else if (S.view.name !== "unit" || !isRunning(S.view.id)) {
+      render();            // overview, results, intros and read-only screens follow along
+    }
+  }
+
+  // ---------- Timer rules ----------
+  // Hard units (A1…A6): remaining = limit - (now - startedAt); at 0 the unit is
+  // submitted with what was typed, also on load if it ran out while closed.
+  // Soft units: the clock counts up against the limit, turns warn past it, and
+  // overtimeSec is written at submit. Nothing clock-derived is written by a timer.
+  const iso = (ms) => new Date(ms).toISOString();
+  const elapsedSec = (doc, now) => Math.max(0, (now - Date.parse(doc.startedAt)) / 1000);
+  const remainingSec = (u, doc, now) => u.limitSec - elapsedSec(doc, now);
+  function mmss(sec) {
+    const s = Math.max(0, Math.floor(sec));
+    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  }
+  const isStarted = (id) => !!S.docs[id];
+  const isDone = (id) => !!(S.docs[id] && S.docs[id].finishedAt);
+  const isRunning = (id) => isStarted(id) && !isDone(id);
+  const allDone = () => UNITS.every((u) => isDone(u.id));
+  const currentUnitOf = (sec) => SECTION_UNITS[sec].find((u) => !isDone(u.id)) || null;
+  const runningHard = () => UNITS.find((u) => u.hard && isRunning(u.id)) || null;
+
+  const ownsText = (id) => S.ownHere.has(id) && !S.locked.has(id);
+  const waitingOut = (u, doc, now) => u.hard && !!doc && !doc.finishedAt && !ownsText(u.id) && remainingSec(u, doc, now) <= 0;
+
+  function expireHard(now) {
+    for (const u of UNITS) {
+      if (!u.hard || !isRunning(u.id)) continue;
+      const over = -remainingSec(u, S.docs[u.id], now);      // seconds past the deadline
+      if (over < 0) continue;
+      if (ownsText(u.id)) { submitUnit(u.id, { timeout: true }); continue; }
+      if (!S.pastDeadline.has(u.id)) {
+        S.pastDeadline.add(u.id);
+        if (S.view.name === "overview" || (S.view.name === "unit" && S.view.id === u.id)) render();
+      }
+      if (over >= GRACE_SEC) expireAdopted(u.id);
+    }
+  }
+
+  // Submit an adopted text whose grace ran out: re-read it and submit the db copy
+  // (never this view's copy), with finishedAt at startedAt + limit. This is also the
+  // path for a text that ran out while the page was closed.
+  async function expireAdopted(id) {
+    const u = UNIT[id];
+    if (S.expiring.has(id) || (S.expireRetryAt[id] || 0) > Date.now()) return;
+    S.expiring.add(id);
+    let copy;
+    try {
+      copy = await Store.fetchCurrent(id);
+    } catch (e) {
+      S.expireRetryAt[id] = Date.now() + 30000;
+      return;
+    } finally {
+      S.expiring.delete(id);
+    }
+    const mine = S.docs[id];
+    if (!mine || mine.finishedAt) return;                    // submitted meanwhile
+    if (!copy) { S.expireRetryAt[id] = Date.now() + 30000; return; }   // not in the db (deleted)
+    if (copy.finishedAt) {                                   // the other view submitted it
+      Store.cancel(id);
+      S.docs[id] = copy;
+      S.pastDeadline.delete(id);
+      Store.mirror(id, copy);
+      if (S.view.name !== "unit" || S.view.id === id || !isRunning(S.view.id)) render();
+      return;
+    }
+    const deadline = Date.parse(copy.startedAt) + u.limitSec * 1000;
+    copy.finishedAt = iso(deadline);
+    copy.overtimeSec = 0;
+    try { copy.auto = autoScore(u, copy); } catch (e) { copy.auto = null; }
+    touch(copy);
+    Store.cancel(id);
+    S.docs[id] = copy;
+    S.pastDeadline.delete(id);
+    Store.flush(id, copy);
+    afterSubmit(id, { tone: "warn", text: deadline < S.loadedAt
+      ? "Время текста " + id + " вышло, пока страница была закрыта, — текст сдан с тем, что было сохранено."
+      : "Время текста " + id + " вышло — текст сдан с тем, что было сохранено." });
+  }
+
+  function renderClock(now) {
+    const el = $("clock");
+    // A running C-test text always owns the bar, whatever screen is open.
+    const hard = runningHard();
+    const id = hard ? hard.id : S.view.name === "unit" && isRunning(S.view.id) ? S.view.id : null;
+    const away = !(S.view.name === "unit" && S.view.id === id);
+    if (!id || !S.ready) { el.hidden = true; return; }
+    const u = UNIT[id];
+    const doc = S.docs[id];
+    let label = "";
+    let value;
+    let warn;
+    if (u.hard) {
+      const rem = Math.max(0, Math.ceil(remainingSec(u, doc, now)));
+      value = mmss(rem);
+      label = (away ? id + " · " : "") + "осталось";
+      warn = rem <= 60;
+    } else {
+      const el2 = elapsedSec(doc, now);
+      value = mmss(el2) + " / " + mmss(u.limitSec);
+      warn = el2 > u.limitSec;
+    }
+    el.hidden = false;
+    el.classList.toggle("warn", warn);
+    el.replaceChildren(label ? h("small", null, label) : "", value);
+  }
+
+  // ---------- Scoring at submit ----------
+  const countWords = AS.countWords;
+  const blank = (v) => v == null || String(v).trim() === "";
+  const turnKey = AUTO.turnKey;
+
+  function autoScore(u, doc) {
+    return AUTO.score(u.kind, u.id, doc);
+  }
+  function autoOf(id) {
+    const doc = S.docs[id];
+    if (doc.auto) return doc.auto;
+    try { return autoScore(UNIT[id], doc); } catch (e) { return null; }
+  }
+
+  // [answered, total] for item-like units
+  function tally(u, doc) {
+    const r = doc.responses || {};
+    const count = (list, has) => [list.filter(has).length, list.length];
+    const chosen = (i) => typeof r[i.id] === "number";
+    switch (u.kind) {
+      case "self": return count(K.self.statements, chosen);
+      case "ctest": return count(BUILT[u.id] ? BUILT[u.id].gaps : [], (g) => !blank(r[g.index]));
+      case "grammar": return count(K.grammar, (i) => !blank(r[i.id]));
+      case "lesen": return count(K.lesen.flatMap((t) => t.items), chosen);
+      case "hoeren": return count(K.hoeren.flatMap((t) => t.items), chosen);
+      case "dialog": return count(DIALOG.turns.map((t, i) => turnKey(i)), (k) => !blank(r[k]));
+      default: return null;
+    }
+  }
+  function plural(n, one, few, many) {
+    const m10 = n % 10;
+    const m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  }
+  const wordsText = (n) => n + " " + plural(n, "слово", "слова", "слов");
+  function targetOf(u) {
+    const e = K.schreiben.find((x) => x.id === u.id);
+    return e ? e.words : 0;
+  }
+  function progressText(u, doc) {
+    const t = tally(u, doc);
+    if (t) return (u.kind === "ctest" ? "Заполнено " : "Отвечено ") + t[0] + " из " + t[1];
+    const n = countWords(doc.responses.text);
+    const target = targetOf(u);
+    return wordsText(n) + (target ? " · цель ≈ " + target : "");
+  }
+  function missingNote(u, doc) {
+    const t = tally(u, doc);
+    if (t) return t[0] < t[1] ? " Без ответа: " + (t[1] - t[0]) + "." : "";
+    return blank(doc.responses.text) ? " Поле пустое." : "";
+  }
+
+  // ---------- Actions ----------
+  const touch = (doc) => {
+    doc.updatedAt = iso(Date.now());
+    stampWriter(doc);
+  };
+
+  async function startUnit(id) {
+    const u = UNIT[id];
+    if (!S.ready || S.starting || isStarted(id) || S.locked.has(id) || currentUnitOf(u.section) !== u) return;
+    if (u.kind === "ctest" && !BUILT[id]) return;
+    const hard = runningHard();
+    if (hard && hard !== u) return;
+    const attempt = {};
+    S.starting = id;
+    S.startAttempt = attempt;
+    render();
+    let existing;
+    try {
+      existing = await Promise.race([Store.fetchExisting(id),
+        new Promise((_, reject) => setTimeout(() => reject({ code: "timeout" }), 10000))]);
+    } catch (e) {
+      if (S.startAttempt !== attempt) return;
+      S.starting = null;
+      S.notice = { tone: "warn", text: (e && e.code === "timeout"
+        ? "Не удалось за 10 секунд проверить, не начата ли эта часть в другом окне."
+        : "Не удалось проверить, не начата ли эта часть в другом окне.") + " Проверь соединение и нажми «Начать» ещё раз." };
+      render();
+      return;
+    }
+    if (S.startAttempt !== attempt) return;
+    S.starting = null;
+    if (S.view.name !== "unit" || S.view.id !== id || isStarted(id)) { render(); return; }
+    if (existing && existing.startedAt) {
+      // Started in another view: continue that attempt, never restart it.
+      S.docs[id] = existing;
+      go({ name: "unit", id }, { notice: { tone: "warn", text: existing.finishedAt
+        ? "Эта часть уже сдана в другом окне."
+        : "Эта часть уже начата в другом окне — продолжаешь с сохранённого места, часы идут с того начала." } });
+      return;
+    }
+    const doc = {
+      unit: id,
+      startedAt: iso(Date.now()),
+      finishedAt: null,
+      overtimeSec: 0,
+      limitSec: u.limitSec,
+      responses: u.kind === "ctest" ? new Array(BUILT[id].gaps.length).fill("") : {},
+      auto: null,
+      contentVersion: K.version,
+    };
+    touch(doc);
+    S.docs[id] = doc;
+    S.ownHere.add(id);
+    Store.flush(id, doc);
+    go({ name: "unit", id }, { focus: u.kind === "ctest" });
+  }
+
+  function answer(id, key, value) {
+    const u = UNIT[id];
+    const doc = S.docs[id];
+    if (!doc || doc.finishedAt || S.locked.has(id)) return;
+    if (u.hard && remainingSec(u, doc, Date.now()) <= 0) {
+      if (ownsText(id)) submitUnit(id, { timeout: true });
+      return;
+    }
+    doc.responses[key] = value;
+    touch(doc);
+    S.ownHere.add(id);
+    Store.save(id, doc);
+  }
+
+  function submitUnit(id, opts = {}) {
+    const u = UNIT[id];
+    const doc = S.docs[id];
+    if (!doc || doc.finishedAt || S.locked.has(id)) return;
+    const now = Date.now();
+    const start = Date.parse(doc.startedAt);
+    if (u.hard) {
+      doc.finishedAt = iso(Math.min(now, start + u.limitSec * 1000));
+      doc.overtimeSec = 0;
+    } else {
+      doc.finishedAt = iso(now);
+      doc.overtimeSec = Math.max(0, Math.round((now - start) / 1000 - u.limitSec));
+    }
+    try { doc.auto = autoScore(u, doc); } catch (e) { doc.auto = null; }
+    touch(doc);
+    Store.flush(id, doc);
+
+    const name = SECTION_UNITS[u.section].length > 1 ? u.id : SECTION[u.section].title;
+    const closed = u.hard && start + u.limitSec * 1000 < S.loadedAt;
+    afterSubmit(id, opts.timeout
+      ? { tone: "warn", text: closed
+        ? "Время текста " + id + " вышло, пока страница была закрыта, — текст сдан с тем, что было вписано."
+        : "Время вышло — текст " + id + " сдан с тем, что было вписано." }
+      : { tone: "ok", text: "Сдано: " + name + "." });
+  }
+
+  // After a submit: from the unit's own screen, move on; elsewhere, just say so.
+  function afterSubmit(id, notice) {
+    const u = UNIT[id];
+    if (S.view.name === "unit" && S.view.id === id) {
+      const next = currentUnitOf(u.section);
+      if (allDone()) go({ name: "results" }, { notice });
+      else if (next) go({ name: "unit", id: next.id }, { notice });
+      else go({ name: "overview" }, { notice });
+    } else {
+      showNotice(notice);
+    }
+  }
+
+  // A notice for something that happened off screen (a text expired in the
+  // background). While another unit is being worked on, it is slotted into the
+  // sheet without a re-render, so focus and caret stay where they are.
+  function showNotice(notice) {
+    S.notice = notice;
+    const editing = S.view.name === "unit" && isRunning(S.view.id) && !S.locked.has(S.view.id);
+    const sheet = app.querySelector(".sheet");
+    if (!editing || !sheet) { render(); return; }
+    const el = noticeEl();
+    const old = sheet.querySelector(":scope > .notice");
+    if (old) old.replaceWith(el);
+    else (sheet.querySelector(":scope > .unit-label") || sheet.querySelector(":scope > .title")).after(el);
+  }
+
+  function openSection(sec) {
+    const u = currentUnitOf(sec) || SECTION_UNITS[sec][0];
+    go({ name: "unit", id: u.id });
+  }
+
+  function go(view, opts = {}) {
+    S.view = view;
+    S.confirm = null;
+    S.notice = opts.notice || null;
+    render();
+    window.scrollTo(0, 0);
+    if (opts.focus) {
+      const first = app.querySelector(".gap-in:not([readonly]), .blank:not([readonly]), textarea:not([readonly])");
+      if (first) first.focus({ preventScroll: true });
+    }
+  }
+
+  // ---------- Views ----------
+  function render() {
+    let node;
+    if (S.loadError) node = viewLoadError();
+    else if (S.view.name === "unit") node = viewUnit(S.view.id);
+    else if (S.view.name === "results" && allDone()) node = viewResults();
+    else node = viewOverview();
+    app.replaceChildren(node);
+    const wide = S.view.name === "unit" && UNIT[S.view.id].kind === "lesen" && isStarted(S.view.id);
+    $("bar").classList.toggle("wide", wide);
+    $("bar-title").textContent = barTitle();
+    ui.update();
+    renderClock(Date.now());
+  }
+
+  function barTitle() {
+    if (S.view.name === "unit") {
+      const u = UNIT[S.view.id];
+      const sec = SECTION[u.section];
+      return SECTION_UNITS[u.section].length > 1 ? sec.title + " · " + u.id : sec.title;
+    }
+    if (S.view.name === "results") return "Einstufungstest · Auswertung";
+    return "Einstufungstest Deutsch";
+  }
+
+  const noticeEl = () => (S.notice ? h("p", { class: "notice " + S.notice.tone, role: "status" }, S.notice.text) : null);
+  const offlineBanner = () => (S.ready && !Store.online()
+    ? h("p", { class: "banner" }, "Ответы сохраняются только в этом браузере — открой страницу в claude.ai, чтобы Claude их увидел.")
+    : null);
+  const dmy = (v) => String(v).split("-").reverse().join(".");
+  const fassung = "Fassung " + dmy(K.version);
+  function versionBanner() {
+    const old = UNITS.filter((u) => S.docs[u.id] && S.docs[u.id].contentVersion !== K.version);
+    if (!old.length) return null;
+    const versions = [...new Set(old.map((u) => dmy(S.docs[u.id].contentVersion)))].join(", ");
+    return h("p", { class: "banner" }, "Тест обновился после того, как ты начал: " + old.map((u) => (u.id === "self" ? "Teil 0" : u.id)).join(", ") +
+      " — ответы для версии от " + versions + ", сейчас версия от " + dmy(K.version) + ". Продолжай как обычно, Claude учтёт это при проверке.");
+  }
+  const sittingMinutes = (n) => K.sections.filter((s) => s.sitting === n).reduce((a, s) => a + s.minutes, 0);
+  const sittingLetters = (n) => K.sections.filter((s) => s.sitting === n).map((s) => (s.id === "self" ? "0" : s.id)).join(", ");
+
+  function viewOverview() {
+    const rules = [
+      ["Два захода.", "Первый — Teil " + sittingLetters(1) + ", около " + sittingMinutes(1) + " минут. Второй — Teil " +
+        sittingLetters(2) + ", около " + sittingMinutes(2) + " минут; понадобятся наушники и микрофон."],
+      ["Без помощи.", "Без словаря, переводчика, проверки орфографии и чужих подсказок. Не знаешь — пиши, как думаешь: ошибка скажет Claude больше, чем пустое место."],
+      ["Часы.", "В C-тесте у каждого текста 5 минут, потом текст сдаётся сам. В остальных частях часы — ориентир: после лимита они желтеют, сдать можно и позже. Часы части идут, пока она не сдана, даже если страница закрыта, — перерывы делай между частями, а не посреди части."],
+      ["Диктовка для Teil F.", "Включи диктовку macOS — дважды Fn, язык Deutsch (Системные настройки → Клавиатура → Диктовка)."],
+      ["Результаты", "появятся после последней части. Письмо и речь проверит Claude."],
+    ];
+    // First visit: rules before the plan. Once begun: plan and "continue" on top.
+    const ruleList = h("ul", { class: "rules" }, rules.map(([b, t]) => h("li", null, h("b", null, b), " ", t)));
+    const begun = UNITS.some((u) => isStarted(u.id));
+    return h("article", { class: "sheet" },
+      h("p", { class: "eyebrow" }, "Prüfungsbogen · " + fassung),
+      h("h1", { class: "title" }, "Einstufungstest Deutsch"),
+      h("p", { class: "lead" }, "Входной тест: C-тест, грамматика, чтение, аудирование, письмо и речь. По нему Claude поставит цели первого блока."),
+      offlineBanner(),
+      versionBanner(),
+      noticeEl(),
+      begun ? [overviewTable(), ctaBlock(), h("h2", null, "Правила"), ruleList] : [ruleList, overviewTable(), ctaBlock()]);
+  }
+
+  function overviewTable() {
+    const table = h("table", { class: "plan" },
+      h("thead", null, h("tr", null, h("th", { scope: "col" }, "Teil"), h("th", { scope: "col" }, "Время"), h("th", { scope: "col" }, "Статус"))));
+    for (const n of [1, 2]) {
+      const body = h("tbody", null,
+        h("tr", { class: "sitting" }, h("th", { colspan: "3", scope: "rowgroup" }, "Заход " + n + " · ≈ " + sittingMinutes(n) + " мин")));
+      for (const s of K.sections.filter((x) => x.sitting === n)) body.append(sectionRow(s));
+      table.append(body);
+    }
+    return h("div", { class: "table-wrap" }, table);
+  }
+
+  function sectionRow(s) {
+    const units = SECTION_UNITS[s.id];
+    const done = units.filter((u) => isDone(u.id)).length;
+    const status = done === units.length ? "done" : units.some((u) => isStarted(u.id)) ? "run" : "open";
+    const time = units.length > 1 && units.every((u) => u.hard)
+      ? units.length + " × " + units[0].limitSec / 60 + " мин"
+      : s.minutes + " мин";
+    return h("tr", null,
+      h("td", null, h("button", { type: "button", class: "teil", disabled: !S.ready, onclick: () => openSection(s.id) }, s.title)),
+      h("td", { class: "time" }, time),
+      h("td", null,
+        h("span", { class: "pill " + status }, { open: "offen", run: "läuft", done: "abgegeben" }[status]),
+        units.length > 1 && status === "run" ? h("span", { class: "pill-sub" }, done + " из " + units.length) : null));
+  }
+
+  function ctaBlock() {
+    const wrap = h("div", { class: "cta" });
+    if (!S.ready) { wrap.append(button("Подключаю хранилище…", null, "btn primary", true)); return wrap; }
+    const running = runningHard();
+    if (running) { wrap.append(button("Вернуться к тексту " + running.id, () => go({ name: "unit", id: running.id }))); return wrap; }
+    if (allDone()) {
+      if (E) wrap.append(h("p", { class: "between" }, "Тест проверен " + dmy(E.checked) + ": уровни, письмо, речь и цели первого блока."));
+      wrap.append(button("Результаты", () => go({ name: "results" })));
+      return wrap;
+    }
+    const sec = K.sections.find((s) => currentUnitOf(s.id));
+    const started = SECTION_UNITS[sec.id].some((u) => isStarted(u.id));
+    const firstDone = K.sections.filter((s) => s.sitting === 1).every((s) => !currentUnitOf(s.id));
+    const secondUntouched = UNITS.filter((u) => SECTION[u.section].sitting === 2).every((u) => !isStarted(u.id));
+    if (firstDone && secondUntouched) {
+      wrap.append(h("p", { class: "between" }, "Первый заход сделан. Второй — около " + sittingMinutes(2) +
+        " минут подряд: тихая комната, наушники, микрофон для диктовки."));
+    }
+    wrap.append(button((started ? "Продолжить: " : "Начать: ") + sec.title, () => openSection(sec.id)));
+    return wrap;
+  }
+
+  function viewLoadError() {
+    const code = S.loadError && S.loadError.code;
+    return h("article", { class: "sheet" },
+      h("p", { class: "eyebrow" }, "Prüfungsbogen · " + fassung),
+      h("h1", { class: "title" }, "Einstufungstest Deutsch"),
+      h("p", { class: "notice warn" }, "Не удалось загрузить сохранённые ответы" + (code ? " (" + code + ")" : "") +
+        ". Ничего не потеряно — проверь соединение и загрузи ещё раз."),
+      button("Загрузить ещё раз", () => { S.loadError = null; render(); load(); }));
+  }
+
+  function unitChips(u) {
+    const cur = currentUnitOf(u.section);
+    return h("nav", { class: "chips", "aria-label": "Части раздела" }, SECTION_UNITS[u.section].map((x) => {
+      const done = isDone(x.id);
+      return h("button", {
+        type: "button",
+        class: "chip" + (done ? " done" : "") + (x === cur ? " cur" : ""),
+        disabled: !(done || x === cur),
+        "aria-current": x === u ? "step" : null,
+        title: x.label,
+        onclick: () => go({ name: "unit", id: x.id }),
+      }, x.id);
+    }));
+  }
+
+  function viewUnit(id) {
+    const u = UNIT[id];
+    const sec = SECTION[u.section];
+    const doc = S.docs[id];
+    const multi = SECTION_UNITS[u.section].length > 1;
+    const sheet = h("article", { class: "sheet" + (u.kind === "lesen" && doc ? " wide" : "") },
+      button("← Обзор" + (doc && !doc.finishedAt ? " · часы идут" : ""), () => go({ name: "overview" }), "back"),
+      h("p", { class: "eyebrow" }, "Prüfungsbogen"),
+      h("h1", { class: "title" }, sec.title),
+      multi ? unitChips(u) : null,
+      multi ? h("p", { class: "unit-label" }, u.id + " · " + u.label) : null,
+      noticeEl());
+    const locked = S.locked.has(id);
+    const waiting = waitingOut(u, doc, Date.now());
+    if (locked) sheet.append(h("p", { class: "banner", role: "status" }, "Эта часть изменена в другом окне — продолжай там или обнови страницу."));
+    else if (waiting) sheet.append(h("p", { class: "banner", role: "status" }, "Время вышло. Текст сдаётся автоматически — с тем, что сохранено."));
+    if (!doc) { sheet.append(viewIntro(u)); return sheet; }
+    const ro = !!doc.finishedAt || locked || waiting;
+    for (const n of [body(u, doc, ro)].flat(Infinity)) if (n) sheet.append(n);
+    if (doc.finishedAt) sheet.append(doneNote(u, doc));
+    else if (!locked && !waiting) sheet.append(submitSlot(u));
+    return sheet;
+  }
+
+  const INTRO = {
+    self: () => [K.self.statements.length + " утверждений «Ich kann…» — по навыкам и по темам из твоей жизни. Для каждого выбери, насколько это про тебя сегодня: " +
+      K.self.scale.join(", ") + ". Отвечай по первому впечатлению."],
+    ctest: (u) => [
+      "В каждом втором слове пропала вторая половина — допиши её в строку, начало слова уже напечатано. Первое и последнее предложения целые. Tab или Enter — к следующему пропуску, «Weiter» — сдать текст раньше срока.",
+      u.id === K.ctest[0].id ? h("p", { class: "example de", lang: "de" },
+        h("small", null, "Пример"), "Am ",
+        h("span", { class: "gap" }, "Mor", h("input", { type: "text", class: "gap-in", value: "gen", readonly: true, tabindex: "-1", style: "--n:4", "aria-label": "пример: Morgen" })),
+        " trinke ich Kaffee.") : null,
+    ],
+    grammar: () => [K.grammar.length + " коротких предложений. Впиши, чего не хватает: слово, форму или окончание — только недостающую часть. В скобках — исходная форма или слова на выбор. Где даны готовые варианты, выбери один."],
+    lesen: () => ["Два текста — " + K.lesen.map((t) => "«" + t.title + "»").join(" и ") +
+      ", к каждому по " + K.lesen[0].items.length + " вопросов. «steht nicht im Text» — если текст об этом ничего не говорит."],
+    hoeren: () => ["Два выпуска Deutsche Welle. Ссылка откроет выпуск в новой вкладке. Сначала прочитай вопросы, потом слушай столько раз, сколько сказано в карточке эпизода (не больше двух), без транскрипта и субтитров. Нужны наушники."],
+    schreiben: (u) => [K.schreiben.map((e) => e.id + " — «" + e.title + "»").join(", ") +
+      ". Пиши прямо здесь: без словаря, переводчика и проверки орфографии. Объём — около " + targetOf(u) + " слов, можно больше."],
+    monolog: () => ["Говоришь, а не пишешь. Включи диктовку macOS: дважды Fn, язык — Deutsch (Системные настройки → Клавиатура → Диктовка). Нажми в поле и рассказывай около " +
+      MONOLOG.minutes + " минут по пунктам. Текст после диктовки не исправляй — Claude нужна речь как есть. Если диктовка не работает, напечатай в темпе речи, не останавливаясь."],
+    dialog: () => ["Телефонный звонок в Hausarztpraxis. Прочитай реплику регистратуры и ответь голосом — диктовкой в поле под ней. «Подсказка» — что сказать, если не знаешь, с чего начать; открывай её, только если застрял."],
+  };
+
+  function viewIntro(u) {
+    const cur = currentUnitOf(u.section);
+    const lines = INTRO[u.kind](u).map((x) => (typeof x === "string" ? h("p", null, x) : x));
+    const budget = u.hard
+      ? h("p", { class: "budget" }, h("b", null, mmss(u.limitSec)), "на текст — когда время выйдет, текст сдастся сам с тем, что успел вписать.")
+      : h("p", { class: "budget" }, h("b", null, u.limitSec / 60 + " мин"), "— ориентир. Часы пойдут после «Начать»; после лимита они желтеют, сдать можно и позже.");
+    const hard = runningHard();
+    let action;
+    if (cur !== u) action = h("p", { class: "hint" }, "Сначала сдай " + cur.id + ".");
+    else if (hard && hard !== u) action = h("p", { class: "hint" }, "Сейчас идёт текст " + hard.id + " — сначала закончи его, потом начинай эту часть.");
+    else if (u.kind === "ctest" && !BUILT[u.id]) action = h("p", { class: "notice warn" }, "Текст " + u.id + " не собрался: " + BUILD_ERROR[u.id] + ". Напиши Claude в чат.");
+    else if (S.starting === u.id) action = button("Проверяю…", null, "btn primary", true);
+    else action = button(u.kind === "ctest" ? "Начать текст " + u.id : "Начать", () => startUnit(u.id), "btn primary", !S.ready || !!S.starting);
+    return h("section", { class: "intro" }, lines, budget, action);
+  }
+
+  function body(u, doc, ro) {
+    switch (u.kind) {
+      case "self": return bodySelf(u, doc, ro);
+      case "ctest": return bodyCTest(u, doc, ro);
+      case "grammar": return bodyGrammar(u, doc, ro);
+      case "lesen": return bodyReading(u, doc, ro);
+      case "hoeren": return bodyListening(u, doc, ro);
+      case "schreiben": return bodyWriting(u, doc, ro);
+      case "monolog": return bodyMonolog(u, doc, ro);
+      default: return bodyDialog(u, doc, ro);
+    }
+  }
+
+  const noAssist = { autocomplete: "off", autocapitalize: "off", autocorrect: "off", spellcheck: "false" };
+
+  function radio(u, doc, ro, key, k, text) {
+    const rid = key + "-" + k;
+    return h("div", { class: "opt" },
+      h("input", { type: "radio", id: rid, name: key, value: String(k), checked: doc.responses[key] === k, disabled: ro, "data-unit": u.id, "data-key": key }),
+      h("label", { for: rid, lang: "de" }, text));
+  }
+  function choiceItem(u, doc, ro, item) {
+    const pid = "q-" + item.id;
+    const short = item.options.every((o) => o.length <= 26);
+    return h("div", { class: "item" },
+      h("p", { class: "q de", id: pid, lang: "de" }, item.prompt),
+      h("div", { class: "opts" + (short ? " row" : ""), role: "radiogroup", "aria-labelledby": pid },
+        item.options.map((o, k) => radio(u, doc, ro, item.id, k, o))));
+  }
+
+  function bodySelf(u, doc, ro) {
+    const out = [h("p", { class: "hint" }, "Насколько это про тебя сегодня?")];
+    let group = null;
+    for (const st of K.self.statements) {
+      if (st.group !== group) { group = st.group; out.push(h("h2", { class: "group", lang: "de" }, group)); }
+      const pid = "q-" + st.id;
+      out.push(h("div", { class: "stmt" },
+        h("p", { class: "de", id: pid, lang: "de" }, st.de),
+        h("p", { class: "ru" }, st.ru),
+        h("div", { class: "opts scale", role: "radiogroup", "aria-labelledby": pid },
+          K.self.scale.map((label, k) => radio(u, doc, ro, st.id, k, label)))));
+    }
+    return out;
+  }
+
+  function bodyCTest(u, doc, ro) {
+    const built = BUILT[u.id];
+    if (!built) return [h("p", { class: "notice warn" }, "Текст " + u.id + " не собрался: " + BUILD_ERROR[u.id] + ". Напиши Claude в чат.")];
+    const p = h("p", { class: "ctest", lang: "de" });
+    let lastGap = null;
+    for (const part of built.parts) {
+      if (part.type === "text") {
+        let v = part.value;
+        const glue = lastGap ? v.match(/^\S*/)[0] : "";   // keep "Markt." together
+        if (glue) { lastGap.append(glue); v = v.slice(glue.length); }
+        p.append(v);
+        lastGap = null;
+        continue;
+      }
+      lastGap = h("span", { class: "gap" }, part.shown, h("input", Object.assign({
+        type: "text", id: u.id + "-g" + part.index, class: "gap-in", style: "--n:" + (part.answer.length + 1),
+        value: doc.responses[part.index] || "", readonly: ro, enterkeyhint: "next",
+        "data-unit": u.id, "data-key": String(part.index), "aria-label": "Пропуск " + (part.index + 1) + ": " + part.shown + "…",
+      }, noAssist)));
+      p.append(lastGap);
+    }
+    return [h("p", { class: "hint" }, "Допиши вторую половину слова. Tab или Enter — следующий пропуск."), p];
+  }
+
+  function bodyGrammar(u, doc, ro) {
+    const list = h("div", { class: "items" });
+    for (const it of GRAMMAR_ORDER) {
+      if (it.type === "choice") { list.append(choiceItem(u, doc, ro, it)); continue; }
+      const [before, after] = it.prompt.split("___");
+      const pre = before.match(/^([\s\S]*?)(\S*)$/);
+      const post = after.match(/^(\S*)([\s\S]*)$/);
+      const suffix = /[A-Za-zÄÖÜäöüß]$/.test(before);
+      const input = h("input", Object.assign({
+        type: "text", id: "B-" + it.id, class: "blank" + (suffix ? " suffix" : ""), value: doc.responses[it.id] || "",
+        readonly: ro, enterkeyhint: "next", "data-unit": u.id, "data-key": it.id, "aria-label": suffix ? "окончание" : "пропуск",
+      }, noAssist));
+      list.append(h("div", { class: "item" },
+        h("p", { class: "fill de", lang: "de" }, pre[1], h("span", { class: "gap" }, pre[2], input, post[1]), post[2])));
+    }
+    return [h("p", { class: "hint" }, "Впиши только недостающую часть. Enter — к следующему пропуску."), list];
+  }
+
+  function bodyReading(u, doc, ro) {
+    return K.lesen.map((t) => h("section", { class: "reading" },
+      h("div", null,
+        h("h2", { lang: "de" }, t.title),
+        h("div", { class: "passage de" + (/Sehr geehrte/.test(t.text) ? " letter" : ""), lang: "de" }, t.text)),
+      h("div", { class: "questions items" }, t.items.map((it) => choiceItem(u, doc, ro, it)))));
+  }
+
+  function bodyListening(u, doc, ro) {
+    const out = [h("p", { class: "rule-line" }, "Слушай столько раз, сколько сказано в карточке эпизода (не больше двух), без транскрипта и субтитров.")];
+    for (const ep of K.hoeren) {
+      out.push(h("section", { class: "episode" },
+        h("p", { class: "eyebrow" }, "Deutsche Welle · слушать ≈ " + ep.listenMinutes + " мин"),
+        h("h2", { lang: "de" }, ep.title),
+        h("p", { class: "ru" }, ep.note),
+        h("a", { class: "btn", href: ep.url, target: "_blank", rel: "noopener noreferrer" }, "Открыть выпуск ↗")));
+      out.push(h("div", { class: "items" }, ep.items.map((it) => choiceItem(u, doc, ro, it))));
+    }
+    return out;
+  }
+
+  function writingField(u, doc, ro, key, id, label, rows, target) {
+    return [
+      h("div", { class: "field" },
+        h("label", { class: "field-label", for: id }, label),
+        h("textarea", Object.assign({ id, rows: String(rows), class: "write", lang: "de", value: doc.responses[key] || "",
+          readonly: ro, "data-unit": u.id, "data-key": key }, noAssist, { autocapitalize: "sentences" }))),
+      target != null ? h("p", { class: "count", "data-count": id, "data-target": String(target) }, countLabel(countWords(doc.responses[key]), target)) : null,
+    ];
+  }
+  const countLabel = (n, target) => wordsText(n) + (target ? " · цель ≈ " + target : "");
+
+  function bodyWriting(u, doc, ro) {
+    const e = K.schreiben.find((x) => x.id === u.id);
+    return [
+      h("section", { class: "task" },
+        h("p", { class: "eyebrow", lang: "de" }, "Aufgabe · " + e.register),
+        h("h2", { lang: "de" }, e.title),
+        h("p", { class: "de", lang: "de" }, e.situation),
+        h("ul", { class: "points de", lang: "de" }, e.points.map((p) => h("li", null, p))),
+        h("p", { class: "target", lang: "de" }, "Umfang: etwa " + e.words + " Wörter")),
+      writingField(u, doc, ro, "text", u.id + "-text", "Твой текст", 14, e.words),
+    ];
+  }
+
+  function bodyMonolog(u, doc, ro) {
+    return [
+      h("section", { class: "task" },
+        h("p", { class: "eyebrow", lang: "de" }, "Aufgabe"),
+        h("h2", { lang: "de" }, MONOLOG.prompt),
+        h("ul", { class: "points de", lang: "de" }, MONOLOG.points.map((p) => h("li", null, p)))),
+      h("p", { class: "hint" }, "Нажми в поле, дважды Fn — и говори. Паузы и оговорки — нормально, не исправляй."),
+      writingField(u, doc, ro, "text", u.id + "-text", "Диктовка", 12, 0),
+    ];
+  }
+
+  function bodyDialog(u, doc, ro) {
+    const chat = h("div", { class: "chat" });
+    DIALOG.turns.forEach((t, i) => {
+      const key = turnKey(i);
+      chat.append(h("div", { class: "turn" },
+        h("div", { class: "praxis de", lang: "de" }, h("small", null, "Praxis"), t.praxis),
+        h("div", { class: "reply" },
+          writingField(u, doc, ro, key, key, "Ты", 2, null),
+          t.hint ? h("details", { class: "tip" }, h("summary", null, "Подсказка"), h("p", { class: "ru" }, t.hint)) : null)));
+    });
+    return [
+      h("section", { class: "task" },
+        h("p", { class: "eyebrow", lang: "de" }, "Situation"),
+        h("p", { class: "de", lang: "de" }, DIALOG.situation)),
+      chat,
+    ];
+  }
+
+  function submitSlot(u) {
+    const slot = h("div", { class: "submit" });
+    fillSubmit(slot, u);
+    return slot;
+  }
+  function fillSubmit(slot, u) {
+    const doc = S.docs[u.id];
+    if (S.confirm !== u.id) {
+      slot.replaceChildren(
+        button(u.kind === "ctest" ? "Weiter" : "Сдать часть", () => { S.confirm = u.id; fillSubmit(slot, u); slot.querySelector(".primary").focus(); }),
+        h("span", { class: "progress", id: "progress" }, progressText(u, doc)));
+      return;
+    }
+    const what = u.kind === "ctest" ? "текст " + u.id + " досрочно"
+      : SECTION_UNITS[u.section].length > 1 ? u.id + " · " + u.label : SECTION[u.section].title;
+    slot.replaceChildren(
+      h("p", { class: "confirm-text", id: "progress" }, "Сдать " + what + "? Изменить ответы потом будет нельзя." + missingNote(u, doc)),
+      button("Да, сдать", () => submitUnit(u.id)),
+      button("Вернуться к ответам", () => { S.confirm = null; fillSubmit(slot, u); }, "btn"));
+  }
+
+  function doneNote(u, doc) {
+    const t = new Date(doc.finishedAt);
+    const when = t.toLocaleDateString("ru-RU", { day: "numeric", month: "long" }) + " в " +
+      t.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    const next = currentUnitOf(u.section);
+    return h("div", { class: "submit" },
+      h("span", { class: "pill done" }, "abgegeben"),
+      h("span", { class: "progress" }, "Сдано " + when + ". Ответы только для чтения."),
+      allDone() ? button("Результаты", () => go({ name: "results" }))
+        : next ? button("Дальше: " + next.id, () => go({ name: "unit", id: next.id }))
+          : button("К обзору", () => go({ name: "overview" })));
+  }
+
+  function viewResults() {
+    const ct = K.ctest.map((t) => ({ t, a: autoOf(t.id) || { strict: 0, tolerant: 0, max: 0 } }));
+    let level = null;
+    try { level = SC.estimateCTestLevel(ct.map(({ t, a }) => ({ band: t.band, strict: a.strict, max: a.max }))); } catch (e) { level = null; }
+    const sum = (k) => ct.reduce((acc, { a }) => acc + a[k], 0);
+    const anchors = new Set(E ? E.ctest.anchors : []);
+
+    const ctTable = h("div", { class: "table-wrap" }, h("table", { class: "scores" },
+      h("thead", null, h("tr", null,
+        h("th", { scope: "col" }, "Текст"), h("th", { scope: "col" }, "Тема"), h("th", { scope: "col" }, "Уровень"),
+        h("th", { scope: "col", class: "num" }, "Строго"), h("th", { scope: "col", class: "num" }, "С допуском"))),
+      h("tbody", null, ct.map(({ t, a }) => h("tr", null,
+        h("td", { class: "mono" }, t.id), h("td", { lang: "de" }, t.topic, anchors.has(t.id) ? h("span", { class: "pill-sub" }, "якорь") : null),
+        h("td", { class: "mono" }, t.band),
+        h("td", { class: "num" }, a.strict + "/" + a.max), h("td", { class: "num" }, a.tolerant + "/" + a.max)))),
+      h("tfoot", null, h("tr", null, h("td", { colspan: "3" }, "Всего"),
+        h("td", { class: "num" }, sum("strict") + "/" + sum("max")), h("td", { class: "num" }, sum("tolerant") + "/" + sum("max"))))));
+
+    const g = autoOf("B") || { byZone: {} };
+    const zones = ZONES.map((z, i) => Object.assign({ z, i }, g.byZone[z] || { correct: 0, max: 0 }))
+      .sort((a, b) => (a.max ? a.correct / a.max : 0) - (b.max ? b.correct / b.max : 0) || a.i - b.i);
+    const zoneRows = h("div", { class: "zones" }, zones.map((z) => h("div", { class: "zone" + (z.correct <= z.max / 2 ? " weak" : "") },
+      h("span", null, ZONE_NAME[z.z] || z.z),
+      h("span", { class: "cells", "aria-hidden": "true" }, Array.from({ length: z.max }, (_, k) => h("i", { class: k < z.correct ? "on" : null }))),
+      h("span", { class: "n" }, z.correct + "/" + z.max))));
+
+    const stat = (sec, texts, id) => {
+      const a = autoOf(id) || { correct: 0, max: 0, byText: {} };
+      return h("div", { class: "stat" },
+        h("span", { lang: "de" }, SECTION[sec].title),
+        h("b", null, a.correct + "/" + a.max),
+        h("span", { lang: "de" }, texts.map((t) => t.title + " " + ((a.byText[t.id] || {}).correct || 0) + "/" + t.items.length).join(" · ")));
+    };
+
+    if (!E) {
+      return h("article", { class: "sheet" },
+        button("← Обзор", () => go({ name: "overview" }), "back"),
+        h("p", { class: "eyebrow" }, "Prüfungsbogen · Auswertung"),
+        h("h1", { class: "title" }, "Результаты"),
+        offlineBanner(),
+        noticeEl(),
+        h("p", { class: "lead" }, "Автоматическая часть. Самооценку Claude сравнит с замером, письмо и речь проверит отдельно."),
+        h("h2", { lang: "de" }, SECTION.A.title),
+        h("div", { class: "level" }, h("b", null, level || "—"), h("span", null, "предварительно — до калибровки по onSET")),
+        ctTable,
+        h("h2", { lang: "de" }, SECTION.B.title),
+        h("p", { class: "hint" }, "Карта пробелов: слабые зоны сверху."),
+        zoneRows,
+        h("h2", null, "Lesen и Hören"),
+        h("div", { class: "stats" }, stat("C", K.lesen, "C"), stat("D", K.hoeren, "D")),
+        h("h2", null, "Schreiben и Sprechen"),
+        h("p", null, "Проверит Claude — напиши в чате «проверь тест»."),
+        Store.online() ? null : copyBlock());
+    }
+
+    const typeTable = h("div", { class: "table-wrap" }, h("table", { class: "scores" },
+      h("thead", null, h("tr", null, h("th", { scope: "col" }, "Тип ошибки"),
+        h("th", { scope: "col", class: "num" }, "Всего"), h("th", { scope: "col", class: "num" }, "В якорях"))),
+      h("tbody", null, E.ctest.types.map((x) => h("tr", null, h("td", null, x.type),
+        h("td", { class: "num" }, x.n), h("td", { class: "num" }, x.anchors)))),
+      h("tfoot", null, h("tr", null, h("td", null, "Всего"),
+        h("td", { class: "num" }, E.ctest.types.reduce((a, x) => a + x.n, 0)),
+        h("td", { class: "num" }, E.ctest.types.reduce((a, x) => a + x.anchors, 0))))));
+
+    return h("article", { class: "sheet" },
+      button("← Обзор", () => go({ name: "overview" }), "back"),
+      h("p", { class: "eyebrow" }, "Prüfungsbogen · Auswertung · " + dmy(E.checked)),
+      h("h1", { class: "title" }, "Результаты"),
+      offlineBanner(),
+      noticeEl(),
+      h("p", { class: "lead" }, E.lead),
+
+      h("h2", null, "Итог"),
+      ladder(),
+      h("p", { class: "thesis" }, E.thesis),
+
+      h("h2", null, "Цели первого блока"),
+      h("ol", { class: "goals" }, E.goals.map((x) => h("li", { class: "goal" }, h("div", { class: "goal-body" },
+        h("h3", null, x.title), h("p", null, mark(x.why)), h("p", { class: "ex", lang: "de" }, mark(x.example)), h("p", null, mark(x.how)))))),
+      h("p", { class: "aside" }, mark(E.always)),
+      h("p", { class: "aside" }, mark(E.calls)),
+
+      h("h2", null, "Самооценка против замера"),
+      h("div", { class: "vs" }, E.self.map((x) => h("div", { class: "vs-row" },
+        h("h3", null, x.skill, h("span", { class: "pill " + ({ low: "low", match: "done", high: "high" }[x.verdict]) },
+          { low: "занижаешь", match: "совпадает", high: "завышаешь" }[x.verdict])),
+        h("p", null, h("small", null, "Ты сказал"), x.said),
+        h("p", null, h("small", null, "Замер"), x.measured)))),
+      h("p", { class: "aside" }, E.selfNote),
+
+      h("h2", { lang: "de" }, SECTION.A.title),
+      h("div", { class: "level" }, h("b", null, level || "—"), h("span", null, "предварительно — до калибровки по onSET")),
+      ctTable,
+      h("p", { class: "hint" }, E.ctest.bands),
+      h("h3", null, "Ошибки по типам"),
+      typeTable,
+      h("p", { class: "aside" }, E.ctest.anchorNote),
+      E.ctest.texts.map((x) => [
+        h("h3", null, x.id + " · ", h("span", { lang: "de" }, CTEXT[x.id].topic), " · " + CTEXT[x.id].band),
+        x.note ? h("p", { class: "hint" }, mark(x.note)) : null,
+        fixList(x.items.map(([de, why]) => [de, why, ""]))]),
+
+      h("h2", { lang: "de" }, SECTION.B.title),
+      h("p", { class: "hint" }, "Карта пробелов: слабые зоны сверху."),
+      zoneRows,
+      h("p", { class: "aside" }, E.grammar.note),
+      h("h3", null, "Где ошибка"),
+      fixList(E.grammar.items.map(([zone, de, why, src]) => [de, (ZONE_NAME[zone] || zone) + ": " + why, src])),
+
+      h("h2", null, "Lesen и Hören"),
+      h("div", { class: "stats" }, stat("C", K.lesen, "C"), stat("D", K.hoeren, "D")),
+      h("p", { class: "aside" }, mark(E.lesen)),
+      h("h3", null, "Промахи в Hören"),
+      h("ul", { class: "fixes" }, E.hoeren.misses.map(([id, what, his, right]) => h("li", null,
+        h("p", null, h("span", { class: "mono" }, id), " · ", what),
+        h("p", { class: "ex", lang: "de" }, h("del", null, his), " → ", h("ins", null, right))))),
+      h("p", { class: "aside" }, E.hoeren.note),
+
+      h("h2", { lang: "de" }, SECTION.E.title),
+      h("p", { class: "aside" }, mark(E.schreibenNote)),
+      E.schreiben.map(writingResult),
+
+      h("h2", { lang: "de" }, SECTION.F.title),
+      h("p", { class: "aside" }, E.sprechenNote),
+      E.sprechen.map(speakingResult),
+
+      h("h2", null, "Журнал ошибок и дальше"),
+      h("p", null, E.fehler),
+      h("p", { class: "aside" }, E.next),
+      Store.online() ? null : copyBlock());
+  }
+
+  // German snippets: ~~his~~ struck, **correction** in red pen, *word* in italics.
+  function mark(str) {
+    return String(str).split(/(~~[^~]+~~|\*\*[^*]+\*\*|\*[^*\s][^*]*\*)/).filter(Boolean).map((t) =>
+      t.startsWith("~~") ? h("del", null, t.slice(2, -2))
+        : t.startsWith("**") ? h("ins", null, t.slice(2, -2))
+          : t.length > 2 && t.startsWith("*") && t.endsWith("*") ? h("i", { lang: "de" }, t.slice(1, -1))
+            : t);
+  }
+
+  function fixList(rows) {
+    return h("ul", { class: "fixes" }, rows.map(([de, why, src]) => h("li", null,
+      h("p", { class: "ex", lang: "de" }, mark(de)),
+      h("p", { class: "why" }, mark(why), src ? [" · ", h("a", { href: src, target: "_blank", rel: "noopener noreferrer" }, src.includes("dwds") ? "DWDS ↗" : "Duden ↗")] : null))));
+  }
+
+  // The CEFR ladder: one rung per skill, a band for the range the evidence supports
+  // and a dot for the working level; the C-test dot is hollow until onSET calibrates it.
+  function ladder() {
+    const at = (lvl) => E.scale.indexOf(lvl) + 1;
+    const rows = [h("div", { class: "ladder-head", "aria-hidden": "true" }, h("span"),
+      h("div", { class: "ticks" }, E.scale.map((s) => h("span", null, s))))];
+    let group = null;
+    const rung = (name, note, lvl, from, to, prov) => h("div", { class: "rung" },
+      h("div", { class: "rung-name" }, h("b", { lang: "de" }, name), h("small", null, note)),
+      h("div", { class: "track", role: "img", "aria-label": name + ": " + lvl + (from ? ", диапазон " + from + "–" + to : ", предварительно") },
+        from ? h("span", { class: "range", style: "grid-column:" + at(from) + "/" + (at(to) + 1) }) : null,
+        h("span", { class: "marker" + (prov ? " prov" : ""), style: "grid-column:" + at(lvl) })));
+    for (const r of E.ladder) {
+      if (r.group !== group) { group = r.group; rows.push(h("div", { class: "grp" }, group)); }
+      rows.push(rung(r.skill, r.level + " · " + r.note, r.level, r.from, r.to, false));
+    }
+    rows.push(h("div", { class: "grp" }, "Общий уровень"));
+    rows.push(rung("C-Test", E.ctestLevel.level + " · " + E.ctestLevel.note, E.ctestLevel.level, null, null, true));
+    return h("div", { class: "ladder" }, rows);
+  }
+
+  function criteria(c, names) {
+    return h("div", { class: "crit" }, names.map(([k, label]) => h("div", null,
+      h("span", null, label), h("b", null, c[k] || "—"))));
+  }
+
+  // His text against the grader's corrected version, word by word.
+  function words(s) {
+    const out = [];
+    String(s || "").replace(/\r/g, "").split("\n").forEach((line, i) => {
+      if (i) out.push("\n");
+      for (const w of line.split(/\s+/)) if (w) out.push(w);
+    });
+    return out;
+  }
+  function diff(a, b) {
+    const n = a.length;
+    const m = b.length;
+    const L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) {
+      L[i][j] = a[i] === b[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+    }
+    const ops = [];
+    let i = 0;
+    let j = 0;
+    while (i < n && j < m) {
+      if (a[i] === b[j]) { ops.push(["=", a[i]]); i++; j++; }
+      else if (L[i + 1][j] >= L[i][j + 1]) ops.push(["-", a[i++]]);
+      else ops.push(["+", b[j++]]);
+    }
+    while (i < n) ops.push(["-", a[i++]]);
+    while (j < m) ops.push(["+", b[j++]]);
+    return ops;
+  }
+  function korrektur(orig, fixed) {
+    const box = h("div", { class: "korrektur", lang: "de" });
+    const ops = diff(words(orig), words(fixed));
+    let k = 0;
+    const sep = () => { if (box.lastChild && box.lastChild.nodeName !== "BR") box.append(" "); };
+    while (k < ops.length) {
+      if (ops[k][0] === "=") {
+        if (ops[k][1] === "\n") box.append(h("br"));
+        else { sep(); box.append(ops[k][1]); }
+        k++;
+        continue;
+      }
+      const del = [];
+      const ins = [];
+      let breaks = 0;              // line breaks follow the corrected text
+      while (k < ops.length && ops[k][0] !== "=") {
+        if (ops[k][1] !== "\n") (ops[k][0] === "-" ? del : ins).push(ops[k][1]);
+        else if (ops[k][0] === "+") breaks += 1;
+        k++;
+      }
+      if (del.length) { sep(); box.append(h("del", null, del.join(" "))); }
+      if (ins.length) { sep(); box.append(h("ins", null, ins.join(" "))); }
+      for (let b = 0; b < breaks; b++) box.append(h("br"));
+    }
+    return box;
+  }
+
+  function writingResult(x) {
+    const doc = S.docs[x.id];
+    const errors = x.edits.filter((e) => e.error).length;
+    return [
+      h("h3", null, x.id + " · ", h("span", { lang: "de" }, x.title)),
+      h("p", { class: "meta" }, x.range + " · " + wordsText(x.words) + " · " + x.minutes),
+      criteria(x.criteria, [["task", "Aufgabe"], ["coherence", "Kohärenz"], ["vocabulary", "Wortschatz"], ["structures", "Strukturen"]]),
+      h("p", { class: "field-label" }, "Получилось"),
+      h("ul", { class: "points" }, x.strengths.map((s) => h("li", null, mark(s)))),
+      h("p", { class: "aside" }, mark(x.task)),
+      h("p", { class: "field-label", style: "margin-top:18px" }, "Твой текст с правками"),
+      doc ? korrektur(doc.responses.text, x.corrected) : h("p", { class: "korrektur", lang: "de" }, x.corrected),
+      h("details", { class: "all" },
+        h("summary", null, "Все правки: " + x.edits.length + " (ошибок " + errors + ", по стилю " + (x.edits.length - errors) + ")"),
+        x.edits.map((e) => h("div", { class: "edit" + (e.error ? "" : " style") },
+          h("p", { class: "pair", lang: "de" }, h("del", null, e.wrong), " → ", h("ins", null, e.right)),
+          h("span", { class: "code" }, e.cat + (e.error ? "" : " · стиль")),
+          h("p", { class: "why" }, (E.cat[e.cat] ? E.cat[e.cat] + ". " : "") + e.rule,
+            e.source ? [" · ", h("a", { href: e.source, target: "_blank", rel: "noopener noreferrer" }, "источник ↗")] : null)))),
+    ];
+  }
+
+  function speakingResult(x) {
+    return [
+      h("h3", null, x.id + " · " + x.title),
+      h("p", { class: "meta" }, x.range + " · " + wordsText(x.words)),
+      criteria(x.criteria, [["fluency", "Беглость"], ["vocabulary", "Лексика"], ["register", "Регистр"], ["interaction", "Диалог"]]),
+      h("p", { class: "field-label" }, "Получилось"),
+      h("ul", { class: "points" }, x.strengths.map((s) => h("li", null, mark(s)))),
+      h("p", { class: "field-label", style: "margin-top:14px" }, "Что заметно"),
+      h("ul", { class: "points" }, x.notes.map((s) => h("li", null, mark(s)))),
+    ];
+  }
+
+  function copyBlock() {
+    const json = JSON.stringify({ contentVersion: K.version, answers: S.docs }, null, 2);
+    const msg = h("p", { class: "hint", role: "status" });
+    const dump = h("textarea", { class: "dump", readonly: true, hidden: true, "aria-label": "Ответы в JSON", value: json });
+    const copy = async () => {
+      try {
+        await navigator.clipboard.writeText(json);
+        msg.textContent = "Скопировано — вставь в чат с Claude.";
+      } catch (e) {
+        dump.hidden = false;
+        dump.focus();
+        dump.select();
+        msg.textContent = "Выдели текст ниже и скопируй (Cmd+C), потом вставь в чат с Claude.";
+      }
+    };
+    return h("div", { class: "copy" }, button("Скопировать ответы", copy, "btn"), msg, dump);
+  }
+
+  // ---------- Input ----------
+  function refreshLive(u, el) {
+    const doc = S.docs[u.id];
+    const p = $("progress");
+    if (p && doc && S.confirm !== u.id) p.textContent = progressText(u, doc);
+    if (el.tagName === "TEXTAREA") {
+      const c = app.querySelector('[data-count="' + el.id + '"]');
+      if (c) {
+        const n = countWords(el.value);
+        const target = Number(c.dataset.target) || 0;
+        c.textContent = countLabel(n, target);
+        c.classList.toggle("ok", !!target && n >= target);
+      }
+    }
+  }
+  app.addEventListener("input", (ev) => {
+    const el = ev.target;
+    const id = el.dataset && el.dataset.unit;
+    if (!id || el.type === "radio") return;
+    const u = UNIT[id];
+    answer(id, u.kind === "ctest" ? Number(el.dataset.key) : el.dataset.key, el.value);
+    if (!isDone(id)) refreshLive(u, el);
+  });
+  app.addEventListener("change", (ev) => {
+    const el = ev.target;
+    if (el.type !== "radio" || !el.dataset.unit) return;
+    answer(el.dataset.unit, el.dataset.key, Number(el.value));   // integers: Scoring compares ===
+    refreshLive(UNIT[el.dataset.unit], el);
+  });
+  app.addEventListener("keydown", (ev) => {
+    const el = ev.target;
+    if (ev.key !== "Enter" || ev.isComposing || el.tagName !== "INPUT" || el.type !== "text") return;
+    ev.preventDefault();
+    const all = [...app.querySelectorAll('input[type="text"]:not([readonly])')];
+    const next = all[all.indexOf(el) + 1];
+    if (next) next.focus();
+  });
+
+  // ---------- Clock and lifecycle ----------
+  function tick() {
+    const now = Date.now();
+    if (S.ready) {
+      expireHard(now);
+      retryFailed(now);
+    }
+    renderClock(now);
+  }
+  setInterval(tick, 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") Store.flushAll();
+    else tick();
+  });
+  window.addEventListener("pagehide", () => Store.flushAll());
+
+  async function load() {
+    try {
+      const loaded = await Store.loadAll(UNITS.map((u) => u.id));
+      S.docs = loaded.docs;
+      S.inherited = loaded.inherited;
+      for (const id of loaded.own) S.ownHere.add(id);
+    } catch (e) {
+      S.loadError = e || { code: "unavailable" };
+      render();
+      return;
+    }
+    S.loadError = null;
+    S.ready = true;
+    Store.subscribe((id, body) => adoptExternal(id, body, true));
+    expireHard(Date.now());
+    const running = runningHard();
+    if (running && S.view.name === "overview") S.view = { name: "unit", id: running.id };
+    else if (E && allDone() && S.view.name === "overview") S.view = { name: "results" };
+    render();
+  }
+
+  // Another tab of this browser wrote a unit (its localStorage mirror).
+  window.addEventListener("storage", (ev) => {
+    if (!ev.key || !ev.key.startsWith("einstufung:") || !ev.newValue) return;
+    let v = null;
+    try { v = JSON.parse(ev.newValue); } catch (e) { return; }
+    adoptExternal(ev.key.slice("einstufung:".length), v && v.body, false);
+  });
+
+  // Local copies draw the start screen at once; the store lights up when it answers.
+  for (const u of UNITS) {
+    const b = Store.peek(u.id);
+    if (b) S.docs[u.id] = b;
+  }
+  render();
+  Store.init().then(load);
+})();
+</script>

@@ -1,0 +1,20 @@
+# Learner data never lives here. Profiles are symlinks into a learner's private
+# folder; only the template is tracked, and anything a demo run writes next to
+# it stays out too.
+profiles/*
+!profiles/example.toml
+data/
+# Assembled pages (build_page.py): a learner's pack and results, copied.
+build/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+
+# Node
+node_modules/
+
+# macOS
+.DS_Store

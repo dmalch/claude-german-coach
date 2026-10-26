@@ -1,0 +1,60 @@
+# An example learner profile. Copy it into YOUR OWN private folder (the one that will
+# hold your error log and weekly logs), edit it there, and symlink it into this repo:
+#
+#   mkdir -p ~/deutsch && cp profiles/example.toml ~/deutsch/profil.toml
+#   ln -s ~/deutsch/profil.toml profiles/anna.toml
+#
+# Everything in profiles/ except this file is gitignored. Relative paths below are
+# resolved against the folder the profile really lives in, so "." is that folder;
+# a path starting with @core/ points into this repo.
+
+name = "example"
+
+# Your private folder. Fixed files inside it: fehler.md (error log), log/ (weekly
+# logs), tests/ (graded reports), plans/, published/placement-test.json.
+data_dir = "."
+
+[goal]
+target = "C1"
+budget_min_per_week = 180
+# What the German is for. The coach picks topics, letters, calls and role-plays from
+# these, and a content pack written for you uses them as C-test topics.
+domains = ["sport and the outdoors", "offices and phone calls", "conversation", "media and books"]
+not_in_scope = ["work German"]
+# What happens in a week that is not going: never zero.
+minimum_dose = "5 minutes of cards a day + the weekly live lesson"
+# Set and re-set only from measured results, never from impressions.
+milestones = {}
+
+[placement_test]
+# The content pack the page is built with. The example pack ships with this repo;
+# for real measurements you get your own private pack (its two anchor texts must
+# stay unseen by you).
+content = "@core/packs/example/content.js"
+# Graded results shown by the page after the check, written by the placement-test
+# skill. Leave it out until then: the build uses an empty stub.
+# results = "results/ergebnis.js"
+# The claude.ai artifact the page is published to. Empty until the first publish.
+artifact_url = ""
+
+[ctest]
+# The two C-test texts that repeat in every later Kontrolltest. Chosen after the
+# placement test, from the middle of your measured range.
+anchors = []
+
+# Levels, filled from graded tests only. Names with umlauts must be quoted.
+# [skills."Hören"]
+# level = "B2"
+# range = "B1+–B2"
+# source = "Einstufungstest 2026-10, Teil D"
+# date = 2026-10-25
+
+[slots]
+# Free-form notes for the coach: when you study. Nothing parses them.
+wednesday = "09:00–09:30 grammar + speaking"
+thursday = "09:00–10:00 live lesson"
+saturday = "13:00–14:15 writing + listening"
+weekly_review = "Saturday 18:00"
+
+[external]
+# Free-form: external tests booked (onSET), exam dates, trips that break the rhythm.
